@@ -167,10 +167,10 @@ void VideoBuffer::draw(){
     for(int i=0;i<size()+1;i=i+5){
 		
        if((size()-i)%fps==0){
-		   ofSetColor(200);
-		   ofRect(originXAtEnd-(oneLength*(i)),drawBufferY,oneLength,-10);
-		   ofLine(originXAtEnd-(oneLength*(i)),drawBufferY,originXAtEnd-(oneLength*(i)),drawBufferY-10);
-		   ofDrawBitmapString(ofToString(int((float(size())-float(i))/float(fps)))+"s",originXAtEnd-(oneLength*(i)),drawBufferY+15);
+		   ofSetColor(255,128);
+		   //ofRect(originXAtEnd-(oneLength*(i)),drawBufferY+10,oneLength-1,-10);
+           ofLine(originXAtEnd-(oneLength*(i)),drawBufferY,originXAtEnd-(oneLength*(i)),drawBufferY-10);
+		   ofDrawBitmapString(ofToString(int((float(size())-float(i))/float(fps)))+"s",originXAtEnd-(oneLength*(i)),drawBufferY+25);
 //            ofLine(originXAtEnd - (oneLength*i),710,originXAtEnd - (oneLength*i),700);
 //            sprintf(measureMessage,"%0.2f",(float)(frames[i]->getTimestamp()-initTime)/1000000.0);
 //            ofDrawBitmapString(measureMessage,originXAtEnd - (oneLength*i),695);

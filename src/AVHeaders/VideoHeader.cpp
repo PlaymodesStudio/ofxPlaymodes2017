@@ -89,11 +89,11 @@ void VideoHeader::draw(){
     ofSetLineWidth(1);
     
 	if(playing) ofSetColor(0,128,0,128);
-	else ofSetColor(255,128,0,128);
+	else ofSetColor(255,0,0,128);
 
-    ofLine(originXAtEnd-headerPos+1,drawHeaderY+50,originXAtEnd-headerPos,drawHeaderY-40);
+    ofLine(originXAtEnd-headerPos+1,drawHeaderY,originXAtEnd-headerPos,drawHeaderY+100);
     ofRect(originXAtEnd-headerPos-offsetFrames,drawHeaderY+50,oneLength,10);
-	ofDrawBitmapString(ofToString(currentPos),ofPoint(originXAtEnd-headerPos-offsetFrames-(oneLength/2),drawHeaderY+45));
+	ofDrawBitmapString(ofToString(currentPos),ofPoint(originXAtEnd-headerPos-offsetFrames+oneLength/2,drawHeaderY+45));
 	
 	//int	inFrame  = int(double(buffer->size()-1)*(in));
 	//int outFrame = int(double(buffer->size()-1)*(out));
@@ -110,10 +110,10 @@ void VideoHeader::draw(){
 
 	// draw in & out lines
 	ofSetLineWidth(1.0);
-	ofLine(inPos,drawHeaderY-40,inPos,drawHeaderY+60);
-    ofLine(outPos,drawHeaderY-40,outPos,drawHeaderY+60);
+	ofLine(inPos,drawHeaderY,inPos,drawHeaderY+100);
+    ofLine(outPos,drawHeaderY,outPos,drawHeaderY+100);
 	// draw in & out rectangle
-	ofRect(inPos,drawHeaderY,outPos-inPos,50);
+	ofRect(inPos,drawHeaderY,outPos-inPos,40);
 	
 	//ofLine(inPos,drawHeaderY+60,outPos,drawHeaderY+60);
 	// draw inPos triangle
@@ -130,9 +130,9 @@ void VideoHeader::draw(){
 		ofVertex(outPos,drawHeaderY);
 	ofEndShape();
 	
-	ofDrawBitmapString("< " + ofToString(inFrame+1),ofPoint(inPos+0,drawHeaderY+30));
-	ofDrawBitmapString(ofToString(outFrame+1) + " >" ,ofPoint(outPos-30,drawHeaderY+15));
-	ofDrawBitmapString("" +ofToString(this->getLengthFrames()) + "" ,ofPoint(((outPos-inPos)/2)+inPos-30,drawHeaderY-5));
+	ofDrawBitmapString("<" + ofToString(inFrame+1),ofPoint(inPos+0,drawHeaderY+37));
+	ofDrawBitmapString(ofToString(outFrame+1) + ">" ,ofPoint(outPos-30,drawHeaderY+20));
+	ofDrawBitmapString("*" +ofToString(this->getLengthFrames()) + "" ,ofPoint(((outPos-inPos)/2)+inPos-30,drawHeaderY-5));
 	
 	ofSetColor(255,255,255);
 	
@@ -421,6 +421,8 @@ void VideoHeader::setInMs(double in)
 	//printf("vH :: in %d = pct %f\n",in,double(in*1000.0f) / (oneFrameMs*double(buffer->size())));
 	//printf("ms to set %f translated to %f fps %f\n",in,double(in) / (oneFrameMs*double(buffer->size())),this->fps);
 	//printf("VIDEO inMs %d :: %f \n",in,double(in) / (oneFrameMs*double(buffer->size())));
+    
+    this->setLengthMs(in-out);
 }
 //------------------------------------------------------
 void VideoHeader::setInPct(double in)
@@ -452,7 +454,7 @@ double VideoHeader::getOutFrames()
 }
 	
 //------------------------------------------------------
-void VideoHeader::setOutMs(double out)
+void VideoHeader::setOutMs(double _out)
 {
 	/*
 	double oneFrameMs=(TimeDiff)(1000000.0/fps/1.0);
@@ -460,7 +462,9 @@ void VideoHeader::setOutMs(double out)
 	this->setOutPct(CLAMP(fAux,0.0,1.0));    
 	 */
 	
-	if(windowPriority=="in") this->out = out;
+	if(windowPriority=="in") this->out = _out;
+    this->setLengthMs(in-_out);
+
 }
 //------------------------------------------------------
 void VideoHeader::setOutPct(double out)
@@ -492,23 +496,24 @@ double VideoHeader::getLengthFrames()
 	return length/oneFrameMs;
 }
 //------------------------------------------------------
-void VideoHeader::setLengthMs(double length)
+void VideoHeader::setLengthMs(double _length)
 {
-//	double oneFrameMs=(TimeDiff)(1000000.0/fps/1.0);
-//	double fAux = double(out*1000.0f) / (oneFrameMs*double(buffer->size()));
-//	this->setOutPct(CLAMP(fAux,0.0,1.0));    
-	
-	if(this->in-length >= 0.0) {
-		this->length = length;
-		this->out = this->in-length;
-	}
+	double oneFrameMs=(TimeDiff)(1000000.0/fps/1.0);
+	double fAux = double(out*1000.0f) / (oneFrameMs*double(buffer->size()));
+    this->length = _length;
+	//this->setOutPct(CLAMP(fAux,0.0,1.0));
+//	if(this->in-_length >= 0.0)
+//    {
+//		this->length = _length;
+//		this->out = this->in-_length;
+//	}
 }
 //------------------------------------------------------
-void VideoHeader::setLengthPct(double length)
+void VideoHeader::setLengthPct(double _pct)
 {
 //	this->out=CLAMP(out,0.0f,this->in);
 //	this->out=out;
-	this->setLengthMs(totalBufferSizeInMs*length);
+	this->setLengthMs(totalBufferSizeInMs*_pct);
 }
 //------------------------------------------------------
 void VideoHeader::setLengthFrames(int length)
