@@ -35,6 +35,7 @@ private:
     ofMutex mutexFront;
     queue<VideoFrame> framesToSend;
     double remainder;
+    int maxFramesToStore;
 };
 }
 #endif /* VIDEORATE_H_ */

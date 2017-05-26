@@ -422,7 +422,8 @@ void VideoHeader::setInMs(double in)
 	//printf("ms to set %f translated to %f fps %f\n",in,double(in) / (oneFrameMs*double(buffer->size())),this->fps);
 	//printf("VIDEO inMs %d :: %f \n",in,double(in) / (oneFrameMs*double(buffer->size())));
     
-    this->setLengthMs(in-out);
+    this->setLengthMs(out-in);
+    cout << "Header: SetInMs Out-In : " << out-in << " :: Out = " << out << " :: In = " << in << endl;
 }
 //------------------------------------------------------
 void VideoHeader::setInPct(double in)
@@ -462,9 +463,15 @@ void VideoHeader::setOutMs(double _out)
 	this->setOutPct(CLAMP(fAux,0.0,1.0));    
 	 */
 	
-	if(windowPriority=="in") this->out = _out;
-    this->setLengthMs(in-_out);
+	if(windowPriority=="in")
+    {
+        this->out = _out;
+        
+    }
+    this->setLengthMs(out-in);
 
+    cout << "Header: SetInMs Out-In : " << out-in << " :: Out = " << out << " :: In = " << in << endl;
+    
 }
 //------------------------------------------------------
 void VideoHeader::setOutPct(double out)

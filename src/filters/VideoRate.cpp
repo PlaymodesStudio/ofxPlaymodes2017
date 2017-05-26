@@ -12,7 +12,9 @@ namespace ofxPm{
 VideoRate::VideoRate()
 :source(0)
 ,fps(30)
-,remainder(0){
+,remainder(0)
+,maxFramesToStore(30)
+{
 	// TODO Auto-generated constructor stub
 
 }
@@ -43,14 +45,19 @@ void VideoRate::removeListener()
 	
 
 VideoFrame VideoRate::getNextVideoFrame(){
-	Poco::ScopedLock<ofMutex> lock(mutexFront);
+    ofScopedLock lock(mutexFront);
 	return front;
 }
 
 void VideoRate::newVideoFrame(VideoFrame & frame){
 	mutex.lock();
 	back = frame;
+    if(framesToSend.size()>=maxFramesToStore)
+    {
+        framesToSend.pop();
+    }
 	mutex.unlock();
+    //cout << "Vrate : framesToSendSize : " << framesToSend.size() << endl;
 }
 
 float VideoRate::getFps(){
