@@ -45,7 +45,12 @@ public:
 	static int getPoolSize(const VideoFormat & format);
 	static int getTotalNumFrames();
 
+    int         getBufferIndex(){return bufferIndex;};
+    void        setBufferIndex(int i){bufferIndex=i;};
+
 private:
+    
+    int         bufferIndex;
 	class Obj;
 	ofPtr<Obj> data;
     static int total_num_frames;

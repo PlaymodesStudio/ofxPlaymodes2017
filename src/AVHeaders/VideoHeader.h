@@ -26,9 +26,10 @@ public:
 
     void setup(VideoBuffer & buffer);
     void draw();
-    VideoFrame getNextVideoFrame();
-	VideoFrame getVideoFrame(int index);
-    int getNextPosition();
+    VideoFrame  getNextVideoFrame();
+	VideoFrame  getVideoFrame(int index);
+    int         getNextPosition();
+    Timestamp   getNextTimestampFrame();
     VideoBuffer *getBuffer();
 	
 	// delay
@@ -113,8 +114,11 @@ protected:
     
     //---------- TS
 
-    Timestamp		timestampForDelay;
+    Timestamp		delayTS;
     float           delayInMs;
+    Timestamp       inTS, outTS;
+    Timestamp       currentFrameTs;
+    int             currentFrameIndex;
 
 };
 }

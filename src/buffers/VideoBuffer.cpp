@@ -8,12 +8,16 @@
 #include "VideoBuffer.h"
 #include "VideoHeader.h"
 
-namespace ofxPm{
-VideoBuffer::VideoBuffer(VideoSource & source, int size) {
+namespace ofxPm
+{
+
+VideoBuffer::VideoBuffer(VideoSource & source, int size)
+{
 	setup(source,size,true);
 }
 
-VideoBuffer::VideoBuffer(){
+VideoBuffer::VideoBuffer()
+{
 	source = NULL;
 	totalFrames=0;
 	stopped = false;
@@ -104,43 +108,50 @@ float VideoBuffer::getFps(){
     
 //---- TS
 VideoFrame VideoBuffer::getVideoFrame(Timestamp ts)
+{
+    VideoFrame frame;
+    int closestPosition=0;
+    if(size()>0)
     {
-        VideoFrame frame;
-        int closestPosition=0;
-        if(size()>0)
+        TimeDiff tdiff = 10000000000;
+        for(int i=0;i<size();i++)
         {
-            TimeDiff tdiff = 10000000000;
-            for(int i=0;i<size();i++)
+            TimeDiff tdiff2;
+            tdiff2 = abs(ts - frames[i].getTimestamp());
+            if(tdiff2<tdiff)
             {
-                TimeDiff tdiff2;
-                tdiff2 = abs(ts - frames[i].getTimestamp());
-                if(tdiff2<tdiff)
-                {
-                    closestPosition=i;
-                    tdiff=tdiff2;
-                }
-                
+                closestPosition=i;
+                tdiff=tdiff2;
             }
-            cout<<ts.raw()<< " " << closestPosition<<endl;
-            frame = frames[closestPosition];
+            
         }
-        return frame;
+        //cout<<"Buffer : Getting closest frame at TS : " << ts.raw()<< " :: " << closestPosition<<endl;
+        
+        frame = frames[closestPosition];
     }
+    // ??? is this a good way to go ?
+    // i've added a "index position" to a videoFrame ... this allows us to draw header based on pos, not TS
+    frame.setBufferIndex(closestPosition);
+    return frame;
+}
+
 //---- TS
 
     
-VideoFrame VideoBuffer::getVideoFrame(TimeDiff time){
+VideoFrame VideoBuffer::getVideoFrame(TimeDiff time)
+{
     VideoFrame frame;
-    if(size()>0){
+    if(size()>0)
+    {
         int frameback = CLAMP((int)((float)time/1000000.0*(float)getFps()),1,int(size()));
         int currentPos = CLAMP(size()-frameback,0,size()-1);
         frame = frames[currentPos];
     }
 
     return frame;
-
 }
-
+ 
+    
 VideoFrame VideoBuffer::getVideoFrame(int position){
     //return buffer.find(times[times.size()-position])->second;
     if(size()){

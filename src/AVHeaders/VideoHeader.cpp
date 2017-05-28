@@ -79,12 +79,18 @@ void VideoHeader::draw(){
 	
 	
     double oneLength=(double)(ofGetWidth()-PMDRAWSPACING*2)/(double)(buffer->getMaxSize());
-    double currentLength=double(currentPos)/(double(this->buffer->getMaxSize()))*(double)(ofGetWidth()-PMDRAWSPACING*2);
+    //double currentLength=double(currentPos)/(double(this->buffer->getMaxSize()))*(double)(ofGetWidth()-PMDRAWSPACING*2);
     
-    int headerPos = (buffer->size()-currentPos+offsetFrames) * oneLength;
+    // old way ... changed by the TS Header
+    //int headerPos = (buffer->size()-currentPos+offsetFrames) * oneLength;
 	int drawHeaderY = ofGetHeight() -140;
 	int originXAtEnd = ofGetWidth() - PMDRAWSPACING;
 	
+    // TS HEADER
+    int headerPos = (buffer->getMaxSize() - currentFrameIndex)*oneLength;
+    float headerPosBasedOnDelayMs = ((delayInMs/1000.0) / (buffer->getMaxSize()*(1.0/buffer->getFps())))*((double)(ofGetWidth()-PMDRAWSPACING*2));
+    cout << "Header Drawing : DelayInMs : " << delayInMs << "BufferSize " << buffer->getMaxSize() << " FPS :: " << buffer->getFps() << endl;
+    
 	// draw HEADER LINE
     ///////////////////
     ofSetLineWidth(1);
@@ -94,7 +100,8 @@ void VideoHeader::draw(){
 
     ofLine(originXAtEnd-headerPos+1,drawHeaderY,originXAtEnd-headerPos,drawHeaderY+100);
     ofRect(originXAtEnd-headerPos-offsetFrames,drawHeaderY+50,oneLength,10);
-	ofDrawBitmapString(ofToString(currentPos),ofPoint(originXAtEnd-headerPos-offsetFrames+oneLength/2,drawHeaderY+45));
+    ofCircle(originXAtEnd-headerPosBasedOnDelayMs,drawHeaderY,5);
+	ofDrawBitmapString(ofToString(currentFrameIndex),ofPoint(originXAtEnd-headerPos-offsetFrames+oneLength/2,drawHeaderY+45));
 	
 	//int	inFrame  = int(double(buffer->size()-1)*(in));
 	//int outFrame = int(double(buffer->size()-1)*(out));
@@ -139,6 +146,220 @@ void VideoHeader::draw(){
 	
 	ofDisableAlphaBlending();
 }
+//------------------------------------------------------
+VideoFrame VideoHeader::getNextVideoFrame(){
+    
+    // old style
+    //			currentPos=getNextPosition();
+    //			VideoFrame frame = buffer->getVideoFrame(currentPos);
+    
+    // frame to be returned;
+    VideoFrame frame;
+    
+    buffer->lock();
+    {
+        currentFrameTs = getNextTimestampFrame();
+        frame = buffer->getVideoFrame(currentFrameTs);
+        currentFrameIndex = frame.getBufferIndex();
+
+    }
+    buffer->unlock();
+    return frame;
+}
+
+//------------------------------------------------------
+Timestamp   VideoHeader::getNextTimestampFrame()
+{
+    Timestamp ts = 0.0;
+    
+    if(!buffer->isStopped())
+    {
+        delayTS.update();
+        //inTS.update();
+        //outTS.update();
+        
+        //inTS = inTS + TimeDiff(in*1000);
+        //outTS = outTS + TimeDiff(out*1000);
+    }
+    
+    if(!isPlaying())
+    {
+    
+        // just a delay
+        ts = delayTS - TimeDiff(delayInMs*1000);
+
+    }
+    else
+    {
+        /*
+        if(isPlaying()) oneFrame=(TimeDiff)(1000000.0/fps/speed);
+        else oneFrame=(TimeDiff)(1000000.0/fps/1.0);
+        
+        // if time spend since last positionTS.update() + portion to next frame is >= oneFrame
+        // means that we need to update the position !!
+        // position is expressed in frames since started (0..N)
+        //if((double)positionTS.elapsed()+(position-floor(position))*(double)abs(oneFrame)>=abs(oneFrame))
+        if( positionTS.elapsed() >= abs(oneFrame))
+        {
+            //        if(oneFrame!=0)
+            //        {
+            //            position=position + (double(positionTS.elapsed())/(double)oneFrame);
+            //        }
+            // updates the time-stamp with the current time
+            positionTS.update();
+        }
+        
+        // if we're playing in loop and we're reaching the outpoint        
+        if(isPlaying() && (positionTS>outTS))
+        {
+            
+            if(loopMode==OF_LOOP_NORMAL) positionTS = inTS;
+            else if (loopMode==OF_LOOP_NONE)
+            {
+                setPlaying(false);
+            }
+            else if (loopMode==OF_LOOP_PALINDROME)
+            {
+                speed=-speed;
+            }
+        }
+        cout << "Header : PosTS = "<< positionTS.raw() << " // outTS " << outTS.raw() << " DIFF == " << positionTS.raw() - outTS.raw() << endl;
+        return positionTS;
+        */
+        
+    }
+    
+    return ts;
+}
+
+//------------------------------------------------------
+int VideoHeader::getNextPosition()
+{
+    
+    
+    
+    // returns the real position in the buffer . calculate the next position in frames
+    // from the beginning of the recording based on speed
+    // position expresses number of frames since start
+    
+    // calculate how much microseconds is a frame
+    // if we're playing, speed has sense, if not not ?
+    
+    unsigned int buffer_size;
+    unsigned int totalNumFr;
+    unsigned int lastAbsFrame;
+    int	inFrame;
+    int outFrame;
+    int	inAbsFrame;
+    int	outAbsFrame;
+    int backpos;
+    int nextPos;
+    
+    buffer_size=buffer->size();
+    totalNumFr = buffer->getTotalFrames();
+    lastAbsFrame = totalNumFr - buffer_size;
+    //			inFrame  = int(double(buffer_size-1)*(in));
+    //			outFrame = int(double(buffer_size-1)*(out));
+    inFrame = this->getInFrames();
+    outFrame = this->getOutFrames();
+    inAbsFrame  = totalNumFr -  inFrame;
+    outAbsFrame = totalNumFr - outFrame;
+    
+    switch (driveMode)
+    {
+        case 0 :
+            // normal mode, based on time
+            
+            if(playing) oneFrame=(TimeDiff)(1000000.0/fps/speed);
+            else oneFrame=(TimeDiff)(1000000.0/fps/1.0);
+            
+            
+            // if time spend since last positionTS.update() + portion to next frame is >= oneFrame
+            // means that we need to update the position !!
+            // position is expressed in frames since started (0..N)
+            if((double)positionTS.elapsed()+(position-floor(position))*(double)abs(oneFrame)>=abs(oneFrame))
+            {
+                if(oneFrame!=0)
+                {
+                    position=position + (double(positionTS.elapsed())/(double)oneFrame);
+                }
+                // updates the time-stamp with the current time
+                positionTS.update();
+            }
+            
+            // if header is playing and loopStart is requested, set position to inPoint or outPoint depending on speed's sign !
+            if(playing && loopStart)
+            {
+                if(speed>0.0) position=double(inAbsFrame);
+                else position=double(outAbsFrame);
+                loopStart=false;
+            }
+            
+            // if we're playing in loop and we're reaching the outpoint
+            if(playing && (int(position) > (outAbsFrame)))
+            {
+                if(loopMode==OF_LOOP_NORMAL) position = double(inAbsFrame);
+                else if (loopMode==OF_LOOP_NONE)
+                {
+                    setPlaying(false);
+                }
+                else if (loopMode==OF_LOOP_PALINDROME)
+                {
+                    speed=-speed;
+                }
+            }
+            // if we're in playing in loop and we're reaching the inpoint (while speed is negative probably)
+            else if(playing && (int(position) < (inAbsFrame)) && speed<0.0)
+            {
+                if(loopMode==OF_LOOP_NORMAL) position = double(outAbsFrame);
+                else if (loopMode==OF_LOOP_NONE) setPlaying(false);
+                else if (loopMode==OF_LOOP_PALINDROME)
+                {
+                    speed=-speed;
+                }
+            }
+            
+            // clamp position to it's limits ...
+            
+            if(playing) position=CLAMP(position,double(inAbsFrame),double(outAbsFrame));
+            else position=CLAMP(position,double(lastAbsFrame),double(totalNumFr));
+            
+            
+            // backpos
+            backpos=0;	
+            if (!playing)
+            { 
+                backpos=0;
+                nextPos= float(buffer_size-1) - (delay/oneFrame) ;
+            }
+            else {
+                backpos=int(buffer->getTotalFrames()-int(position));
+                backpos=CLAMP(backpos,0,buffer_size-1);
+                nextPos= (buffer_size-1) - backpos;
+            }
+            nextPos = CLAMP(nextPos+offsetFrames,0,buffer_size-1);
+            return nextPos;
+            
+            break;
+            
+        case 1 :
+            // here speed should not modify frame ! because audio is driving this 
+            if(playing) oneFrame=(TimeDiff)(1000000.0/fps);
+            else oneFrame=(TimeDiff)(1000000.0/fps/1.0);
+            
+            // position driven by audio trough calls to delay !!
+            nextPos= int(buffer_size-1) - int(double(delay)/double(oneFrame));
+            nextPos = CLAMP(nextPos+offsetFrames,0,buffer_size-1);
+            return nextPos;
+            
+            break;
+        default:
+            return 0;
+            break;
+    }
+    
+}
+
 
 //------------------------------------------------------
 float VideoHeader::getFps(){
@@ -160,153 +381,6 @@ VideoFrame VideoHeader::getVideoFrame(int index)
 	return frame;
 }
 		
-//------------------------------------------------------
-VideoFrame VideoHeader::getNextVideoFrame(){
-    
-    // old style 
-    //			currentPos=getNextPosition();
-    //			VideoFrame frame = buffer->getVideoFrame(currentPos);
-
-    // frame to be returned;
-    VideoFrame frame;
-    
-    buffer->lock();
-    {
-            if(!buffer->isStopped())
-            {
-                timestampForDelay.update();
-            }
-            //        timestampForDelay = timestampForDelay - TimeDiff(msDelay*1000);
-            frame = buffer->getVideoFrame(timestampForDelay- TimeDiff(delayInMs*1000));
-    }
-    buffer->unlock();
-    return frame;
-}
-
-//------------------------------------------------------
-int VideoHeader::getNextPosition()
-    {
-	// returns the real position in the buffer . calculate the next position in frames
-    // from the beginning of the recording based on speed    
-	// position expresses number of frames since start
-	
-	// calculate how much microseconds is a frame
-	// if we're playing, speed has sense, if not not ?
-	
-	unsigned int buffer_size;
-	unsigned int totalNumFr;
-	unsigned int lastAbsFrame;
-	int	inFrame;
-	int outFrame;
-	int	inAbsFrame;
-	int	outAbsFrame;
-	int backpos;
-	int nextPos;
-	
-	buffer_size=buffer->size();
-	totalNumFr = buffer->getTotalFrames();
-	lastAbsFrame = totalNumFr - buffer_size; 
-	//			inFrame  = int(double(buffer_size-1)*(in));
-	//			outFrame = int(double(buffer_size-1)*(out));
-	inFrame = this->getInFrames();
-	outFrame = this->getOutFrames();
-	inAbsFrame  = totalNumFr -  inFrame;
-	outAbsFrame = totalNumFr - outFrame;
-
-	switch (driveMode) 
-	{
-		case 0 :
-			// normal mode, based on time
-			
-			if(playing) oneFrame=(TimeDiff)(1000000.0/fps/speed);
-			else oneFrame=(TimeDiff)(1000000.0/fps/1.0);
-			
-
-			// if time spend since last positionTS.update() + portion to next frame is >= oneFrame
-			// means that we need to update the position !!
-			// position is expressed in frames since started (0..N)
-			if((double)positionTS.elapsed()+(position-floor(position))*(double)abs(oneFrame)>=abs(oneFrame))
-			{
-				if(oneFrame!=0)
-				{
-					position=position + (double(positionTS.elapsed())/(double)oneFrame);
-				}
-				// updates the time-stamp with the current time
-				positionTS.update();		
-			}
-			
-			// if header is playing and loopStart is requested, set position to inPoint or outPoint depending on speed's sign !
-			if(playing && loopStart)
-			{
-				if(speed>0.0) position=double(inAbsFrame);
-				else position=double(outAbsFrame);
-				loopStart=false;
-			}
-			
-			// if we're playing in loop and we're reaching the outpoint
-			if(playing && (int(position) > (outAbsFrame)))
-			{
-				if(loopMode==OF_LOOP_NORMAL) position = double(inAbsFrame);
-				else if (loopMode==OF_LOOP_NONE)
-				{
-					setPlaying(false);
-				}
-				else if (loopMode==OF_LOOP_PALINDROME) 
-				{
-					speed=-speed;
-				}
-			}
-			// if we're in playing in loop and we're reaching the inpoint (while speed is negative probably)
-			else if(playing && (int(position) < (inAbsFrame)) && speed<0.0)
-			{
-				if(loopMode==OF_LOOP_NORMAL) position = double(outAbsFrame);
-				else if (loopMode==OF_LOOP_NONE) setPlaying(false);
-				else if (loopMode==OF_LOOP_PALINDROME) 
-				{
-					speed=-speed;
-				}
-			}
-			
-			// clamp position to it's limits ...
-	
-			if(playing) position=CLAMP(position,double(inAbsFrame),double(outAbsFrame));
-			else position=CLAMP(position,double(lastAbsFrame),double(totalNumFr));
-			
-			
-			// backpos
-			backpos=0;	
-			if (!playing)
-			{ 
-				backpos=0;
-				nextPos= float(buffer_size-1) - (delay/oneFrame) ;
-			}
-			else {
-				backpos=int(buffer->getTotalFrames()-int(position));
-				backpos=CLAMP(backpos,0,buffer_size-1);
-				nextPos= (buffer_size-1) - backpos;
-			}
-			nextPos = CLAMP(nextPos+offsetFrames,0,buffer_size-1);
-			return nextPos;
-		
-			break;
-			
-		case 1 :
-			// here speed should not modify frame ! because audio is driving this 
-			if(playing) oneFrame=(TimeDiff)(1000000.0/fps);
-			else oneFrame=(TimeDiff)(1000000.0/fps/1.0);
-
-			// position driven by audio trough calls to delay !!
-			nextPos= int(buffer_size-1) - int(double(delay)/double(oneFrame));
-			nextPos = CLAMP(nextPos+offsetFrames,0,buffer_size-1);
-			return nextPos;
-			
-			break;
-		default:
-			return 0;
-			break;
-	}
-}
-
 //------------------------------------------------------
 VideoBuffer *VideoHeader::getBuffer()
 {

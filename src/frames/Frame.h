@@ -17,14 +17,13 @@ public:
 	Frame();
 	virtual ~Frame();
 
-	Timestamp getTimestamp();
-	virtual operator void*()=0;
-
+	Timestamp   getTimestamp();
+	virtual     operator void*()=0;
 protected:
 	void refreshTimestamp();
 
 private:
-    Timestamp timestamp;
+    Timestamp   timestamp;
 };
 }
 #endif /* FRAME_H_ */

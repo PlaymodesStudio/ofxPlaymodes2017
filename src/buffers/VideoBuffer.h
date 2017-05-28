@@ -40,12 +40,15 @@ public:
 	VideoFrame getVideoFrame(int position);     // frame number in the buffer
 	VideoFrame getVideoFrame(TimeDiff time);    // frame at n microseconds from the end of the buffer
 	VideoFrame getVideoFrame(float pct);        // % of the buffer
-    VideoFrame getVideoFrame(Timestamp ts);     // get closer frame to given TimeStamp
 
 	VideoFrame getNextVideoFrame();               // the last video frame in the buffer
 
 
-
+    // TS
+    VideoFrame  getVideoFrame(Timestamp ts);     // get closer frame to given TimeStamp
+    int         getLastGivenPosition(){return lastGivenPosition;};
+    int         lastGivenPosition;
+    // TS
 
 
 	virtual void newVideoFrame(VideoFrame &frame);  // for notification of new frame event
