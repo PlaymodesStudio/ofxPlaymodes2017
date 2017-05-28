@@ -28,10 +28,11 @@ VideoFrame VideoGrabber::getNextVideoFrame(){
     return frame;
 }
 
-void VideoGrabber::update(){
-	ofVideoGrabber::update();
-	if(isFrameNew()){
-		newFrame(getPixelsRef());
+void VideoGrabber::update()
+    {
+        ofVideoGrabber::update();
+        if(isFrameNew()){
+            newFrame(getPixelsRef());
 	}
 }
 
@@ -50,7 +51,6 @@ float VideoGrabber::getFps(){
 void VideoGrabber::setFps(float fps){
 	this->fps = fps;
 }
-	
-	;
+
 	
 }

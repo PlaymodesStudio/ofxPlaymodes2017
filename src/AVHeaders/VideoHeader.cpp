@@ -80,11 +80,12 @@ void VideoHeader::draw(){
 	
     double oneLength=(double)(ofGetWidth()-PMDRAWSPACING*2)/(double)(buffer->getMaxSize());
     double currentLength=double(currentPos)/(double(this->buffer->getMaxSize()))*(double)(ofGetWidth()-PMDRAWSPACING*2);
-	int headerPos = (buffer->size()-currentPos+offsetFrames) * oneLength;
+    
+    int headerPos = (buffer->size()-currentPos+offsetFrames) * oneLength;
 	int drawHeaderY = ofGetHeight() -140;
 	int originXAtEnd = ofGetWidth() - PMDRAWSPACING;
 	
-	// draw header line
+	// draw HEADER LINE
     ///////////////////
     ofSetLineWidth(1);
     
@@ -161,16 +162,30 @@ VideoFrame VideoHeader::getVideoFrame(int index)
 		
 //------------------------------------------------------
 VideoFrame VideoHeader::getNextVideoFrame(){
+    
+    // old style 
+    //			currentPos=getNextPosition();
+    //			VideoFrame frame = buffer->getVideoFrame(currentPos);
 
-        buffer->lock();
-			currentPos=getNextPosition();
-			VideoFrame frame = buffer->getVideoFrame(currentPos);
-        buffer->unlock();
-        return frame;
+    // frame to be returned;
+    VideoFrame frame;
+    
+    buffer->lock();
+    {
+            if(!buffer->isStopped())
+            {
+                timestampForDelay.update();
+            }
+            //        timestampForDelay = timestampForDelay - TimeDiff(msDelay*1000);
+            frame = buffer->getVideoFrame(timestampForDelay- TimeDiff(delayInMs*1000));
+    }
+    buffer->unlock();
+    return frame;
 }
 
 //------------------------------------------------------
-int VideoHeader::getNextPosition(){
+int VideoHeader::getNextPosition()
+    {
 	// returns the real position in the buffer . calculate the next position in frames
     // from the beginning of the recording based on speed    
 	// position expresses number of frames since start
@@ -342,10 +357,14 @@ double VideoHeader::getDelayPct()
 	return res;
 }
 //------------------------------------------------------
-void VideoHeader::setDelayMs(double delayMs)
+void VideoHeader::setDelayMs(double _delayMs)
 {
+    //---------- TS
+    delayInMs = _delayMs;
+    //---------- TS
+    
 	oneFrame=(TimeDiff)(1000000.0/fps/1.0);
-	int delayToSet = int(double(delayMs*1000.0));
+	int delayToSet = int(double(_delayMs*1000.0));
 
 	// control not out of bounds !! needs more precise control related to bufferMarkers !! (TO DO)
 	if(delayToSet<0) delayToSet = 0;

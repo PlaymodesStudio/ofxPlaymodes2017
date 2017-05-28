@@ -101,7 +101,34 @@ float VideoBuffer::getFps(){
     if(source) return source->getFps();
     else return 0;
 }
+    
+//---- TS
+VideoFrame VideoBuffer::getVideoFrame(Timestamp ts)
+    {
+        VideoFrame frame;
+        int closestPosition=0;
+        if(size()>0)
+        {
+            TimeDiff tdiff = 10000000000;
+            for(int i=0;i<size();i++)
+            {
+                TimeDiff tdiff2;
+                tdiff2 = abs(ts - frames[i].getTimestamp());
+                if(tdiff2<tdiff)
+                {
+                    closestPosition=i;
+                    tdiff=tdiff2;
+                }
+                
+            }
+            cout<<ts.raw()<< " " << closestPosition<<endl;
+            frame = frames[closestPosition];
+        }
+        return frame;
+    }
+//---- TS
 
+    
 VideoFrame VideoBuffer::getVideoFrame(TimeDiff time){
     VideoFrame frame;
     if(size()>0){

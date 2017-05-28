@@ -110,6 +110,12 @@ protected:
 	bool			loopStart;
 	
 	int				driveMode; // 0 : based on time // 1 : based on audio which controls it through delay param.
+    
+    //---------- TS
+
+    Timestamp		timestampForDelay;
+    float           delayInMs;
+
 };
 }
 #endif // VIDEOHEADER_H_INCLUDED

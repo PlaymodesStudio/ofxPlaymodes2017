@@ -37,9 +37,10 @@ public:
     // of working in threaded mode,
     // call buffer->lock() buffer->unlock()
     // to call this methods thread sage
-	VideoFrame getVideoFrame(int position);       // frame number in the buffer
+	VideoFrame getVideoFrame(int position);     // frame number in the buffer
 	VideoFrame getVideoFrame(TimeDiff time);    // frame at n microseconds from the end of the buffer
-	VideoFrame getVideoFrame(float pct);          // % of the buffer
+	VideoFrame getVideoFrame(float pct);        // % of the buffer
+    VideoFrame getVideoFrame(Timestamp ts);     // get closer frame to given TimeStamp
 
 	VideoFrame getNextVideoFrame();               // the last video frame in the buffer
 
