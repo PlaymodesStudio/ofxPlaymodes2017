@@ -114,7 +114,7 @@ protected:
     
     //---------- TS
 
-    Timestamp		delayTS;
+    Timestamp		nowTS;
     float           delayInMs;
     Timestamp       inTS, outTS;
     Timestamp       currentFrameTs;

@@ -25,6 +25,7 @@ VideoBuffer::VideoBuffer()
 	microsOneSec=0;
 	realFps = 0.0;
 	framesOneSec = 0;
+//    stopTime=0;
 }
 
 
@@ -54,7 +55,9 @@ VideoBuffer::~VideoBuffer() {
 
 }
 
-void VideoBuffer::newVideoFrame(VideoFrame & frame){
+void VideoBuffer::newVideoFrame(VideoFrame & frame)
+    {
+        
 	int64_t time = frame.getTimestamp().epochMicroseconds();
 	if(microsOneSec==-1) microsOneSec=time;
 	framesOneSec++;
@@ -65,9 +68,12 @@ void VideoBuffer::newVideoFrame(VideoFrame & frame){
 		microsOneSec = time-(diff-1000000);
 	}
     totalFrames++;
-    if(size()==0)initTime=frame.getTimestamp();
+//    if(size()==0)initTime=frame.getTimestamp();
+    TimeDiff tdiff = frame.getTimestamp() - initTime;
+    frame.setTimestamp(tdiff );
     //timeMutex.lock();
     frames.push_back(frame);
+    //cout << "Buffer : newVideoFrame with TS : " << frame.getTimestamp().raw() << endl;
     while(size()>maxSize){
         frames.erase(frames.begin());
     }
@@ -111,21 +117,23 @@ VideoFrame VideoBuffer::getVideoFrame(Timestamp ts)
 {
     VideoFrame frame;
     int closestPosition=0;
-    if(size()>0)
+    if(frames.size()>0)
     {
-        TimeDiff tdiff = 10000000000;
+        TimeDiff tdiff = 1000000000000000;
         for(int i=0;i<size();i++)
         {
-            TimeDiff tdiff2;
-            tdiff2 = abs(ts - frames[i].getTimestamp());
+            TimeDiff tdiff2 = abs(ts - frames[i].getTimestamp());
+            //cout << "Buffer:GetVFr:: Frame : "<< i << " has a TS of : " << frames[i].getTimestamp().raw()  <<  " and we look for " << ts.raw() << " . The diff is = " << tdiff2 << endl;
             if(tdiff2<tdiff)
             {
+                //cout << "!! Found a closest position !! : "<< i << endl;
                 closestPosition=i;
                 tdiff=tdiff2;
             }
             
         }
-        //cout<<"Buffer : Getting closest frame at TS : " << ts.raw()<< " :: " << closestPosition<<endl;
+        cout << endl;
+        //cout<<"Buffer : Getting frame at closest TS : " << ts.raw()<< " :: Closest Position :: " << closestPosition<<endl;
         
         frame = frames[closestPosition];
     }
@@ -208,7 +216,7 @@ void VideoBuffer::draw(){
 		   ofSetColor(255,128);
 		   //ofRect(originXAtEnd-(oneLength*(i)),drawBufferY+10,oneLength-1,-10);
            ofLine(originXAtEnd-(oneLength*(i)),drawBufferY,originXAtEnd-(oneLength*(i)),drawBufferY-10);
-		   ofDrawBitmapString(ofToString(int((float(size())-float(i))/float(fps)))+"s",originXAtEnd-(oneLength*(i)),drawBufferY+25);
+		   //ofDrawBitmapString(ofToString(int((float(size())-float(i))/float(fps)))+"s",originXAtEnd-(oneLength*(i)),drawBufferY+25);
 //            ofLine(originXAtEnd - (oneLength*i),710,originXAtEnd - (oneLength*i),700);
 //            sprintf(measureMessage,"%0.2f",(float)(frames[i]->getTimestamp()-initTime)/1000000.0);
 //            ofDrawBitmapString(measureMessage,originXAtEnd - (oneLength*i),695);
@@ -219,6 +227,35 @@ void VideoBuffer::draw(){
 	   }
     }
 	ofDisableAlphaBlending();
+    
+    // drawing TimeStamp of certain frames ...
+    int steps = this->getMaxSize()/3;
+    for(int i=frames.size()-1;i>0;i=i-steps)
+    {
+//        ofSetColor(255,128,0);
+//        ofDrawBitmapString(ofToString(i), oneLength*(i)+oneLength, drawBufferY-25);
+        Timestamp tA;
+        if(i<=this->getMaxSize())
+        {
+            ofSetColor(255,0,0,128);
+            tA = frames[i].getTimestamp();
+            ofDrawBitmapString(ofToString(tA.raw()/1000000.0), oneLength*(i)+oneLength, drawBufferY+25);
+        }
+        
+    }
+
+//    cout << "......" << endl;
+//    if(ofGetElapsedTimeMillis()>4000)
+//    {
+//        
+//        for(int i=0;i<getMaxSize();i++)
+//        {
+//            cout << "Buff: Frame " << i << "has timestamp of " << frames[i].getTimestamp().raw() << endl;
+//            
+//        }
+//        
+//    }
+    
 	ofSetColor(255);
 
 }
@@ -227,14 +264,28 @@ void VideoBuffer::draw(){
 void VideoBuffer::stop(){
 	ofRemoveListener(source->newFrameEvent,this,&VideoBuffer::newVideoFrame);
     stopped = true;
+    
+    
+//    TimeDiff tdiff = frame.getTimestamp() - initTime;
+//    frame.setTimestamp( this->stopTime + tdiff );
+
+//    //stopTime.update();
+    stopTime = stopTime - initTime;
+    
+    
+    cout << "Buffer: Stop! : " << endl;
 }
 
 void VideoBuffer::resume(){
 	ofAddListener(source->newFrameEvent,this,&VideoBuffer::newVideoFrame);
     stopped = false;
+    
+    //initTime.update();
 }
 
-bool VideoBuffer::isStopped(){
+bool VideoBuffer::isStopped()
+{
+    
 	return stopped;
 }
 

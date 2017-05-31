@@ -10,7 +10,7 @@
 namespace ofxPm{
 Frame::Frame() {
 
-
+    timestamp.update();
 }
 
 Frame::~Frame() {

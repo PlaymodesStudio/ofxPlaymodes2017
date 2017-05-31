@@ -48,7 +48,8 @@ public:
     VideoFrame  getVideoFrame(Timestamp ts);     // get closer frame to given TimeStamp
     int         getLastGivenPosition(){return lastGivenPosition;};
     int         lastGivenPosition;
-    // TS
+    Timestamp   getFirstFrameTimestamp(){return frames[frames.size()-1].getTimestamp();};
+    // TSx
 
 
 	virtual void newVideoFrame(VideoFrame &frame);  // for notification of new frame event
@@ -79,7 +80,7 @@ protected:
 
     long    totalFrames;
     Timestamp initTime;
-
+    Timestamp stopTime;
     VideoSource* source;
 
     bool stopped;

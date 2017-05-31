@@ -17,8 +17,10 @@ public:
 	Frame();
 	virtual ~Frame();
 
+    void        setTimestamp(Timestamp t){timestamp=t;};
 	Timestamp   getTimestamp();
 	virtual     operator void*()=0;
+    
 protected:
 	void refreshTimestamp();
 

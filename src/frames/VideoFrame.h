@@ -50,13 +50,16 @@ public:
 
 private:
     
-    int         bufferIndex;
+    
 	class Obj;
 	ofPtr<Obj> data;
     static int total_num_frames;
     static map<VideoFormat,vector< ofPtr<Obj> >  > pool;
     static ofMutex poolMutex;
     static void poolDeleter(Obj * obj);
+    
+    int         bufferIndex;
+
 };
 }
 #endif /* VIDEOFRAME_H_ */

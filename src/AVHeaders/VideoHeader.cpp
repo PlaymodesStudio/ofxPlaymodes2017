@@ -86,21 +86,24 @@ void VideoHeader::draw(){
 	int drawHeaderY = ofGetHeight() -140;
 	int originXAtEnd = ofGetWidth() - PMDRAWSPACING;
 	
-    // TS HEADER
+    
+    if(playing) ofSetColor(0,128,0,128);
+    else ofSetColor(255,0,0,128);
+
+    // HEADERPOS !!!
     int headerPos = (buffer->getMaxSize() - currentFrameIndex)*oneLength;
+    // TS HEADER CIRCLE
     float headerPosBasedOnDelayMs = ((delayInMs/1000.0) / (buffer->getMaxSize()*(1.0/buffer->getFps())))*((double)(ofGetWidth()-PMDRAWSPACING*2));
-    cout << "Header Drawing : DelayInMs : " << delayInMs << "BufferSize " << buffer->getMaxSize() << " FPS :: " << buffer->getFps() << endl;
+    ofCircle(originXAtEnd-headerPosBasedOnDelayMs,drawHeaderY,5);
+    //cout << "Header Drawing : DelayInMs : " << delayInMs << " // BufferSize " << buffer->getMaxSize() << " // FPS :: " << buffer->getFps() << " // Curr.Frame.Indx = "<< currentFrameIndex <<endl;
     
 	// draw HEADER LINE
     ///////////////////
     ofSetLineWidth(1);
     
-	if(playing) ofSetColor(0,128,0,128);
-	else ofSetColor(255,0,0,128);
 
     ofLine(originXAtEnd-headerPos+1,drawHeaderY,originXAtEnd-headerPos,drawHeaderY+100);
     ofRect(originXAtEnd-headerPos-offsetFrames,drawHeaderY+50,oneLength,10);
-    ofCircle(originXAtEnd-headerPosBasedOnDelayMs,drawHeaderY,5);
 	ofDrawBitmapString(ofToString(currentFrameIndex),ofPoint(originXAtEnd-headerPos-offsetFrames+oneLength/2,drawHeaderY+45));
 	
 	//int	inFrame  = int(double(buffer->size()-1)*(in));
@@ -161,7 +164,6 @@ VideoFrame VideoHeader::getNextVideoFrame(){
         currentFrameTs = getNextTimestampFrame();
         frame = buffer->getVideoFrame(currentFrameTs);
         currentFrameIndex = frame.getBufferIndex();
-
     }
     buffer->unlock();
     return frame;
@@ -174,7 +176,8 @@ Timestamp   VideoHeader::getNextTimestampFrame()
     
     if(!buffer->isStopped())
     {
-        delayTS.update();
+        nowTS = buffer->getFirstFrameTimestamp();
+        //cout << "Header :: nowTS = " << nowTS.raw() << endl;
         //inTS.update();
         //outTS.update();
         
@@ -182,12 +185,15 @@ Timestamp   VideoHeader::getNextTimestampFrame()
         //outTS = outTS + TimeDiff(out*1000);
     }
     
+    //cout << "Header :: delayTS = " << delayTS.utcTime() << endl;
+    
     if(!isPlaying())
     {
     
         // just a delay
-        ts = delayTS - TimeDiff(delayInMs*1000);
-
+        ts = nowTS - TimeDiff(delayInMs*1000);
+        
+        //cout << "Header :: Now is : " << nowTS.raw() << " And nextTSFrame fetched : " << ts.raw() << " = nowTs - delayInMs*1000 (delayMs = " << delayInMs << ")" << endl;
     }
     else
     {

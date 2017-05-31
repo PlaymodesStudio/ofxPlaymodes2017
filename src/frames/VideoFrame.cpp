@@ -128,6 +128,7 @@ public:
 			poolMutex.unlock();
 			return VideoFrame(videoFrame);
 		}
+        
 	}
 
 	VideoFrame VideoFrame::newVideoFrame(ofTexture & videoFrame){
