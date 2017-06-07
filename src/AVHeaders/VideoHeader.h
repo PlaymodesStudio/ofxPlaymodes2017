@@ -41,13 +41,13 @@ public:
     void	setDelayFrames(int delay);
     void	setDelayPct(double pct);
 	// in 
-    double	getIn();
+    double	getInMs();
 	double	getInFrames();
     void	setInMs(double in);
     void	setInFrames(int in);
     void	setInPct(double in);
 	// out 
-    double	getOut() ;	
+    double	getOutMs() ;
 	double	getOutFrames();
     void	setOutMs(double out);
     void	setOutFrames(int out);
@@ -84,24 +84,22 @@ public:
 	// 
 	void	setWindowPriority(string s);
 	void	setOffsetInFrames(int o);
-	int		getCurrentPos();
 
+    // phasors
+    vector<phasorClass*> getPhasors(){return phasors;};
+    
 protected:
     VideoBuffer		*buffer;			// pointer to the buffer of video frames
 	double			totalBufferSizeInMs;
-	Timestamp		positionTS;
-    Timestamp       passedOneFrameTS;
-    TimeDiff		oneFrame;
-    TimeDiff		oneFrameTime;
     double			oneFrameMs;
 	
 
     double			fps;				// framerate
-    double			position;			// position expresses number of frames since start (0..N)
-    int				currentPos;
+//    double			position;			// position expresses number of frames since start (0..N)
+//    int               delay;
+//    int				currentPos;
     double 			speed;
-    int 			delay;
-    double 			in, out, length;	// expressed in ms from realtime ... in is bigger then out
+    double 			inMs, outMs, lengthMs;	// expressed in ms from realtime ... in is bigger then out
 	int				opacity;
 	string			windowPriority;		// in : is always respected (changing length) length : length is always respected (constraining in)
 	int				offsetFrames;				// to adjust av sync in frames
@@ -116,7 +114,7 @@ protected:
 	
 	int				driveMode; // 0 : based on time // 1 : based on audio which controls it through delay param.
     
-    //---------- TS
+    //---------- TS HEADER CONTROL VARS
 
     Timestamp		nowTS;
     float           delayInMs;
@@ -124,6 +122,7 @@ protected:
     Timestamp       currentFrameTs;
     int             currentFrameIndex;
     
+    //--------- PHASORS
     vector<phasorClass*> phasors;
 
 };
