@@ -107,6 +107,7 @@ public:
 	}
 
 	VideoFrame::~VideoFrame(){
+        
 	}
 
 	VideoFrame VideoFrame::newVideoFrame(const ofPixels & videoFrame){

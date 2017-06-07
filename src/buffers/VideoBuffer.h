@@ -80,7 +80,7 @@ protected:
 
     long    totalFrames;
     Timestamp initTime;
-    Timestamp stopTime;
+    TimeDiff  stopTime;
     VideoSource* source;
 
     bool stopped;

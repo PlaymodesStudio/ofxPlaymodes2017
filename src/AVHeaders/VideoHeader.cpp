@@ -144,8 +144,14 @@ void VideoHeader::draw(){
 	ofDrawBitmapString("<" + ofToString(inFrame+1),ofPoint(inPos+0,drawHeaderY+37));
 	ofDrawBitmapString(ofToString(outFrame+1) + ">" ,ofPoint(outPos-30,drawHeaderY+20));
 	ofDrawBitmapString("*" +ofToString(this->getLengthFrames()) + "" ,ofPoint(((outPos-inPos)/2)+inPos-30,drawHeaderY-5));
+    
+    ofSetColor(255,255,255);
 	
-	ofSetColor(255,255,255);
+    // Draw IN OUT TS
+    ofDrawBitmapString("OutTS=" + ofToString(outTS.raw()),ofPoint(ofGetWidth()-200,drawHeaderY-40));
+    ofDrawBitmapString("InTS=" + ofToString(inTS.raw()),ofPoint(200,drawHeaderY-40));
+    ofDrawBitmapString("PosTS=" + ofToString(positionTS.raw()),ofPoint(ofGetWidth()/2,drawHeaderY-40));
+    
 	
 	ofDisableAlphaBlending();
 }
@@ -178,13 +184,17 @@ Timestamp   VideoHeader::getNextTimestampFrame()
     {
         nowTS = buffer->getFirstFrameTimestamp();
         //cout << "Header :: nowTS = " << nowTS.raw() << endl;
-        //inTS.update();
-        //outTS.update();
-        
-        //inTS = inTS + TimeDiff(in*1000);
-        //outTS = outTS + TimeDiff(out*1000);
     }
+
     
+    inTS.update();
+    outTS.update();
+    
+    inTS = nowTS - TimeDiff(in*1000);
+    outTS = nowTS - TimeDiff(out*1000);
+    
+    cout << "Header : getNextTSFrame : inTS = " << ofToString(inTS.raw()/1000000.0) << " :: outTS = " << ofToString(outTS.raw()/1000000.0) << " __ inMs = " << in << " __ outMs = " << out << endl;
+
     //cout << "Header :: delayTS = " << delayTS.utcTime() << endl;
     
     if(!isPlaying())
@@ -194,30 +204,80 @@ Timestamp   VideoHeader::getNextTimestampFrame()
         ts = nowTS - TimeDiff(delayInMs*1000);
         
         //cout << "Header :: Now is : " << nowTS.raw() << " And nextTSFrame fetched : " << ts.raw() << " = nowTs - delayInMs*1000 (delayMs = " << delayInMs << ")" << endl;
+        
+        positionTS.update();
+        positionTS = inTS;
+        passedOneFrameTS.update();
+        cout << "Header :: not in Loop positionTS raw = " << ofToString(positionTS.raw()) << " elaps = " << ofToString(positionTS.elapsed()) << " inTS raw = " << inTS.raw() << endl;
+        
     }
     else
     {
+        /// IF PLAYING THE LOOP !!
+        
+        oneFrameTime =(TimeDiff)(1000000.0/fps/speed);
+
         /*
         if(isPlaying()) oneFrame=(TimeDiff)(1000000.0/fps/speed);
         else oneFrame=(TimeDiff)(1000000.0/fps/1.0);
+        */
+        
+        cout << " PosTS.elapsed " << ofToString(positionTS.elapsed()) << " Raw : " << ofToString(positionTS.raw()) << endl;
+        Timestamp now;
+        TimeDiff d = now - passedOneFrameTS;
+        cout << "From passedOneFrameTS " << d << endl;
+        
+        if(d>oneFrameTime)
+        {
+            TimeDiff d2 = d-oneFrameTime;
+            // More then a frame has happened ! Let's move the position !!
+            positionTS += (oneFrameTime+d2*1.00625);
+            passedOneFrameTS.update();
+            cout << "moving positionsTS to : " << positionTS.raw() << " d2 = " << ofToString(d2) << " OneFrameTime " << oneFrameTime << endl;
+        }
         
         // if time spend since last positionTS.update() + portion to next frame is >= oneFrame
         // means that we need to update the position !!
         // position is expressed in frames since started (0..N)
         //if((double)positionTS.elapsed()+(position-floor(position))*(double)abs(oneFrame)>=abs(oneFrame))
-        if( positionTS.elapsed() >= abs(oneFrame))
-        {
-            //        if(oneFrame!=0)
-            //        {
-            //            position=position + (double(positionTS.elapsed())/(double)oneFrame);
-            //        }
-            // updates the time-stamp with the current time
-            positionTS.update();
-        }
+
+// aquests 2 fan el mateix ... oi ?
+//        if( positionTS.elapsed() >= abs(oneFrame))
+//        if(positionTS.isElapsed(TimeDiff(oneFrame)))
         
-        // if we're playing in loop and we're reaching the outpoint        
+        
+//        TimeDiff howMuchFrameElapsed = TimeDiff(positionTS.raw()) - TimeDiff(oneFrameTime);
+//        cout << "How much time passed = " << ofToString(howMuchFrameElapsed) << " [ TS Ela : " << ofToString(positionTS.elapsed()) << " TS raw : " << positionTS.raw() << " - " << oneFrameTime <<  endl;
+////        if(howMuchFrameElapsed>0)
+//        //if(positionTS.isElapsed(TimeDiff(oneFrame)))
+//        
+//        if( positionTS.raw() >= abs(oneFrame))
+//        {
+//            //        if(oneFrame!=0)
+//            //        {
+//            //            position=position + (double(positionTS.elapsed())/(double)oneFrame);
+//            //        }
+//            // updates the time-stamp with the current time
+//            //positionTS.update();
+//            //positionTS = buffer->getFirstFrameTimestamp();
+//
+//            
+//            cout << " updating PositionTS" << endl;
+//            positionTS.update();
+//            //positionTS=0;
+//            
+//            //positionTS-=0;
+//            //positionTS = positionTS + TimeDiff((oneFrameTime/2));// + (positionTS.elapsed()-oneFrame)) ; //+ TimeDiff(abs(positionTS.elapsed()-oneFrame));
+//            
+//            cout << "Header [PLAY] !!!!!!!!!!!!!!!!!!!!!! updating postionTS at " << positionTS.raw() << " TS Elapsed :  " << ofToString(positionTS.elapsed()) << " _ OneFrame = " << oneFrameTime <<  endl;
+//            
+//        }
+//        else cout << " NOT updating PositionTS" << endl;
+//        
+        // if we're playing in loop and we're reaching the outpoint
         if(isPlaying() && (positionTS>outTS))
         {
+            cout << "Header [PLAY] LOOP ! postionTS = " << ofToString(positionTS.raw()) << " is bigger then  outTS=" << outTS.raw() << endl;
             
             if(loopMode==OF_LOOP_NORMAL) positionTS = inTS;
             else if (loopMode==OF_LOOP_NONE)
@@ -228,13 +288,17 @@ Timestamp   VideoHeader::getNextTimestampFrame()
             {
                 speed=-speed;
             }
+            passedOneFrameTS.update();
+
         }
-        cout << "Header : PosTS = "<< positionTS.raw() << " // outTS " << outTS.raw() << " DIFF == " << positionTS.raw() - outTS.raw() << endl;
+        //cout << "Header : PosTS = "<< positionTS.raw() << " // outTS " << outTS.raw() << " DIFF == " << positionTS.raw() - outTS.raw() << endl;
+        cout << "Header : [PLAY] getting next TS frame at : " << positionTS.raw() << endl;
         return positionTS;
-        */
         
     }
     
+    cout << "Header : getting next TS frame at : " << ts.raw() << endl;
+
     return ts;
 }
 

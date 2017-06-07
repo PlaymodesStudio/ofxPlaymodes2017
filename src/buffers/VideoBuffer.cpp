@@ -70,6 +70,7 @@ void VideoBuffer::newVideoFrame(VideoFrame & frame)
     totalFrames++;
 //    if(size()==0)initTime=frame.getTimestamp();
     TimeDiff tdiff = frame.getTimestamp() - initTime;
+        cout << "Buff::NewVideoFrame:: with TS = " << tdiff << " Which comes from frameTS : " << frame.getTimestamp().raw() << " - initTime " << initTime.raw() << endl;
     frame.setTimestamp(tdiff );
     //timeMutex.lock();
     frames.push_back(frame);
@@ -243,6 +244,8 @@ void VideoBuffer::draw(){
         }
         
     }
+    
+    ofDrawBitmapString(ofToString(this->getInitTime().raw()/1000000.0),10,drawBufferY+45);
 
 //    cout << "......" << endl;
 //    if(ofGetElapsedTimeMillis()>4000)
@@ -265,13 +268,7 @@ void VideoBuffer::stop(){
 	ofRemoveListener(source->newFrameEvent,this,&VideoBuffer::newVideoFrame);
     stopped = true;
     
-    
-//    TimeDiff tdiff = frame.getTimestamp() - initTime;
-//    frame.setTimestamp( this->stopTime + tdiff );
-
-//    //stopTime.update();
-    stopTime = stopTime - initTime;
-    
+    stopTime = initTime.elapsed();
     
     cout << "Buffer: Stop! : " << endl;
 }
@@ -280,7 +277,9 @@ void VideoBuffer::resume(){
 	ofAddListener(source->newFrameEvent,this,&VideoBuffer::newVideoFrame);
     stopped = false;
     
-    //initTime.update();
+    initTime.update();
+    initTime -= stopTime;
+
 }
 
 bool VideoBuffer::isStopped()

@@ -88,7 +88,9 @@ protected:
     VideoBuffer		*buffer;			// pointer to the buffer of video frames
 	double			totalBufferSizeInMs;
 	Timestamp		positionTS;
+    Timestamp       passedOneFrameTS;
     TimeDiff		oneFrame;
+    TimeDiff		oneFrameTime;
     double			oneFrameMs;
 	
 
