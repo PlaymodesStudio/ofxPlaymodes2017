@@ -205,94 +205,97 @@ Timestamp   VideoHeader::getNextTimestampFrame()
         
         //cout << "Header :: Now is : " << nowTS.raw() << " And nextTSFrame fetched : " << ts.raw() << " = nowTs - delayInMs*1000 (delayMs = " << delayInMs << ")" << endl;
         
-        positionTS.update();
-        positionTS = inTS;
-        passedOneFrameTS.update();
-        cout << "Header :: not in Loop positionTS raw = " << ofToString(positionTS.raw()) << " elaps = " << ofToString(positionTS.elapsed()) << " inTS raw = " << inTS.raw() << endl;
+//        positionTS.update();
+//        positionTS = inTS;
+//        passedOneFrameTS.update();
+//        cout << "Header :: not in Loop positionTS raw = " << ofToString(positionTS.raw()) << " elaps = " << ofToString(positionTS.elapsed()) << " inTS raw = " << inTS.raw() << endl;
         
     }
     else
     {
-        /// IF PLAYING THE LOOP !!
-        
-        oneFrameTime =(TimeDiff)(1000000.0/fps/speed);
-
-        /*
-        if(isPlaying()) oneFrame=(TimeDiff)(1000000.0/fps/speed);
-        else oneFrame=(TimeDiff)(1000000.0/fps/1.0);
-        */
-        
-        cout << " PosTS.elapsed " << ofToString(positionTS.elapsed()) << " Raw : " << ofToString(positionTS.raw()) << endl;
-        Timestamp now;
-        TimeDiff d = now - passedOneFrameTS;
-        cout << "From passedOneFrameTS " << d << endl;
-        
-        if(d>oneFrameTime)
-        {
-            TimeDiff d2 = d-oneFrameTime;
-            // More then a frame has happened ! Let's move the position !!
-            positionTS += (oneFrameTime+d2*1.00625);
-            passedOneFrameTS.update();
-            cout << "moving positionsTS to : " << positionTS.raw() << " d2 = " << ofToString(d2) << " OneFrameTime " << oneFrameTime << endl;
-        }
-        
-        // if time spend since last positionTS.update() + portion to next frame is >= oneFrame
-        // means that we need to update the position !!
-        // position is expressed in frames since started (0..N)
-        //if((double)positionTS.elapsed()+(position-floor(position))*(double)abs(oneFrame)>=abs(oneFrame))
-
-// aquests 2 fan el mateix ... oi ?
-//        if( positionTS.elapsed() >= abs(oneFrame))
-//        if(positionTS.isElapsed(TimeDiff(oneFrame)))
-        
-        
-//        TimeDiff howMuchFrameElapsed = TimeDiff(positionTS.raw()) - TimeDiff(oneFrameTime);
-//        cout << "How much time passed = " << ofToString(howMuchFrameElapsed) << " [ TS Ela : " << ofToString(positionTS.elapsed()) << " TS raw : " << positionTS.raw() << " - " << oneFrameTime <<  endl;
-////        if(howMuchFrameElapsed>0)
-//        //if(positionTS.isElapsed(TimeDiff(oneFrame)))
+//        /// IF PLAYING THE LOOP !!
 //        
-//        if( positionTS.raw() >= abs(oneFrame))
-//        {
-//            //        if(oneFrame!=0)
-//            //        {
-//            //            position=position + (double(positionTS.elapsed())/(double)oneFrame);
-//            //        }
-//            // updates the time-stamp with the current time
-//            //positionTS.update();
-//            //positionTS = buffer->getFirstFrameTimestamp();
+//        oneFrameTime =(TimeDiff)(1000000.0/fps/speed);
 //
-//            
-//            cout << " updating PositionTS" << endl;
-//            positionTS.update();
-//            //positionTS=0;
-//            
-//            //positionTS-=0;
-//            //positionTS = positionTS + TimeDiff((oneFrameTime/2));// + (positionTS.elapsed()-oneFrame)) ; //+ TimeDiff(abs(positionTS.elapsed()-oneFrame));
-//            
-//            cout << "Header [PLAY] !!!!!!!!!!!!!!!!!!!!!! updating postionTS at " << positionTS.raw() << " TS Elapsed :  " << ofToString(positionTS.elapsed()) << " _ OneFrame = " << oneFrameTime <<  endl;
-//            
-//        }
-//        else cout << " NOT updating PositionTS" << endl;
+//        /*
+//        if(isPlaying()) oneFrame=(TimeDiff)(1000000.0/fps/speed);
+//        else oneFrame=(TimeDiff)(1000000.0/fps/1.0);
+//        */
 //        
-        // if we're playing in loop and we're reaching the outpoint
-        if(isPlaying() && (positionTS>outTS))
-        {
-            cout << "Header [PLAY] LOOP ! postionTS = " << ofToString(positionTS.raw()) << " is bigger then  outTS=" << outTS.raw() << endl;
-            
-            if(loopMode==OF_LOOP_NORMAL) positionTS = inTS;
-            else if (loopMode==OF_LOOP_NONE)
-            {
-                setPlaying(false);
-            }
-            else if (loopMode==OF_LOOP_PALINDROME)
-            {
-                speed=-speed;
-            }
-            passedOneFrameTS.update();
-
-        }
-        //cout << "Header : PosTS = "<< positionTS.raw() << " // outTS " << outTS.raw() << " DIFF == " << positionTS.raw() - outTS.raw() << endl;
-        cout << "Header : [PLAY] getting next TS frame at : " << positionTS.raw() << endl;
+//        cout << " PosTS.elapsed " << ofToString(positionTS.elapsed()) << " Raw : " << ofToString(positionTS.raw()) << endl;
+//        Timestamp now;
+//        TimeDiff d = now - passedOneFrameTS;
+//        cout << "From passedOneFrameTS " << d << endl;
+//        
+//        if(d>oneFrameTime)
+//        {
+//            TimeDiff d2 = d-oneFrameTime;
+//            // More then a frame has happened ! Let's move the position !!
+//            positionTS += (oneFrameTime+d2);
+//            passedOneFrameTS.update();
+//            cout << "moving positionsTS to : " << positionTS.raw() << " d2 = " << ofToString(d2) << " OneFrameTime " << oneFrameTime << endl;
+//        }
+//        
+//        // if time spend since last positionTS.update() + portion to next frame is >= oneFrame
+//        // means that we need to update the position !!
+//        // position is expressed in frames since started (0..N)
+//        //if((double)positionTS.elapsed()+(position-floor(position))*(double)abs(oneFrame)>=abs(oneFrame))
+//
+//// aquests 2 fan el mateix ... oi ?
+////        if( positionTS.elapsed() >= abs(oneFrame))
+////        if(positionTS.isElapsed(TimeDiff(oneFrame)))
+//        
+//        
+////        TimeDiff howMuchFrameElapsed = TimeDiff(positionTS.raw()) - TimeDiff(oneFrameTime);
+////        cout << "How much time passed = " << ofToString(howMuchFrameElapsed) << " [ TS Ela : " << ofToString(positionTS.elapsed()) << " TS raw : " << positionTS.raw() << " - " << oneFrameTime <<  endl;
+//////        if(howMuchFrameElapsed>0)
+////        //if(positionTS.isElapsed(TimeDiff(oneFrame)))
+////        
+////        if( positionTS.raw() >= abs(oneFrame))
+////        {
+////            //        if(oneFrame!=0)
+////            //        {
+////            //            position=position + (double(positionTS.elapsed())/(double)oneFrame);
+////            //        }
+////            // updates the time-stamp with the current time
+////            //positionTS.update();
+////            //positionTS = buffer->getFirstFrameTimestamp();
+////
+////            
+////            cout << " updating PositionTS" << endl;
+////            positionTS.update();
+////            //positionTS=0;
+////            
+////            //positionTS-=0;
+////            //positionTS = positionTS + TimeDiff((oneFrameTime/2));// + (positionTS.elapsed()-oneFrame)) ; //+ TimeDiff(abs(positionTS.elapsed()-oneFrame));
+////            
+////            cout << "Header [PLAY] !!!!!!!!!!!!!!!!!!!!!! updating postionTS at " << positionTS.raw() << " TS Elapsed :  " << ofToString(positionTS.elapsed()) << " _ OneFrame = " << oneFrameTime <<  endl;
+////            
+////        }
+////        else cout << " NOT updating PositionTS" << endl;
+////        
+//        // if we're playing in loop and we're reaching the outpoint
+//        if(isPlaying() && (positionTS>outTS))
+//        {
+//            cout << "Header [PLAY] LOOP ! postionTS = " << ofToString(positionTS.raw()) << " is bigger then  outTS=" << outTS.raw() << endl;
+//            
+//            if(loopMode==OF_LOOP_NORMAL) positionTS = inTS;
+//            else if (loopMode==OF_LOOP_NONE)
+//            {
+//                setPlaying(false);
+//            }
+//            else if (loopMode==OF_LOOP_PALINDROME)
+//            {
+//                speed=-speed;
+//            }
+//            passedOneFrameTS.update();
+//
+//        }
+//        //cout << "Header : PosTS = "<< positionTS.raw() << " // outTS " << outTS.raw() << " DIFF == " << positionTS.raw() - outTS.raw() << endl;
+//        cout << "Header : [PLAY] getting next TS frame at : " << positionTS.raw() << endl;
+//        float loopPositionNormalized = phasors[0]->getPhasor();
+        double loopPositionAbsolute = phasors[0]->getPhasor() * (out-in); //ofMap(loopPositionNormalized, 0, 1, 0, out-in);
+        positionTS = inTS - TimeDiff(loopPositionAbsolute*1000);
         return positionTS;
         
     }
@@ -715,6 +718,13 @@ void VideoHeader::setLoopMode(int loop)
 	else if (loop==2) loopMode = OF_LOOP_PALINDROME;
 	else if (loop==1) loopMode = OF_LOOP_NONE;
 }
+    
+//------------------------------------------------------
+void VideoHeader::audioRateTrigger(int bufferSize){
+    for(int i = phasors.size()-1 ; i >= 0 ; i--){
+        phasors[i]->audioIn(bufferSize);
+    }
+}
 	
 //------------------------------------------------------
 void VideoHeader::setLoopToStart()
@@ -735,6 +745,10 @@ void VideoHeader::setPlaying(bool isPlaying)
 {
 	if(isPlaying)
 	{
+        //create a phasor
+        phasors.push_back(new phasorClass());
+        phasors[0]->getParameterGroup()->getFloat("BPM") = 60;
+        phasors[0]->getParameterGroup()->getBool("Bounce") = true;
 		// if we're entering loop mode move position to in point
 		// this behaviour is to sync entering loop mode with starting at inPoint or outPoint depending on speed
 		this->playing = isPlaying;
@@ -748,6 +762,8 @@ void VideoHeader::setPlaying(bool isPlaying)
 	}
 	else
 	{
+        delete phasors[0];
+        phasors.pop_back();
 		// if we're gettint out of loop mode move delay to actual position
 		// this behaviour is to let the header (set by delay on no loop) where the loop was when deactivated
 		// other beahaviour could be to let the header on delay / inPoint / outPoint position when loop is turned off

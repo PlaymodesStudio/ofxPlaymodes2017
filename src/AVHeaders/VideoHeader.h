@@ -11,6 +11,7 @@
 #include "VideoSink.h"
 #include "VideoSource.h"
 #include "VideoBuffer.h"
+#include "phasorClass.h"
 
 // acts as a video source and sink
 // controls the position in a buffer
@@ -67,6 +68,7 @@ public:
 	void	setPlaying(bool loopMode);
 	void	setPlaying(bool loopMode, double speed);
 	void	setLoopToStart();
+    void    audioRateTrigger(int bufferSize);
 	
 	// 
 	int		getOpacity();
@@ -121,6 +123,8 @@ protected:
     Timestamp       inTS, outTS;
     Timestamp       currentFrameTs;
     int             currentFrameIndex;
+    
+    vector<phasorClass*> phasors;
 
 };
 }
