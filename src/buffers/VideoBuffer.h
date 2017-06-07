@@ -49,6 +49,7 @@ public:
     int         getLastGivenPosition(){return lastGivenPosition;};
     int         lastGivenPosition;
     Timestamp   getFirstFrameTimestamp(){return frames[frames.size()-1].getTimestamp();};
+    Timestamp   getLastFrameTimestamp(){return frames[0].getTimestamp();};
     // TSx
 
 

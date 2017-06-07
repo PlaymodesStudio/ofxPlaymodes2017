@@ -110,13 +110,20 @@ void VideoHeader::draw(){
 	//int outFrame = int(double(buffer->size()-1)*(out));
 	int inFrame = this->getInFrames();
 	int outFrame = this->getOutFrames();
-	int inPos;
-	//inPos= PMDRAWSPACING + ((int(buffer->size())-inFrame) * oneLength) + oneLength/2;
-	inPos = originXAtEnd - (oneLength*(inFrame+1));
-	//int outPos = PMDRAWSPACING + (int((buffer->size())-outFrame) * oneLength) + oneLength/2;
-	int outPos = originXAtEnd - (oneLength*outFrame);
+	int inPos,outPos;
+//	inPos = originXAtEnd - (oneLength*(inFrame+1));
+//	outPos = originXAtEnd - (oneLength*outFrame);
+    
+    // length of buffer in MicroSeconds ... Int64
+    int totalBuffLengthMs= int( (buffer->getFirstFrameTimestamp() - buffer->getLastFrameTimestamp())/1000) ;
+    inPos = ofMap((inTS.raw()/1000)-int(buffer->getLastFrameTimestamp().raw()/1000),0,totalBuffLengthMs,PMDRAWSPACING,originXAtEnd);
+    outPos = ofMap((outTS.raw()/1000)-int(buffer->getLastFrameTimestamp().raw()/1000),0,totalBuffLengthMs,PMDRAWSPACING,originXAtEnd);
+    
+    
+    //inPos= PMDRAWSPACING + ((int(buffer->size())-inFrame) * oneLength) + oneLength/2;
+    //int outPos = PMDRAWSPACING + (int((buffer->size())-outFrame) * oneLength) + oneLength/2;
 	
-	//printf("inPos %d outPos %d :: in %f inF %d oneL %f buffS %d:: %d\n",inPos,outPos,in,inFrame,oneLength, ((buffer->size()-1-inFrame) * oneLength),PMDRAWSPACING + ((buffer->size()-1-inFrame) * oneLength) + (oneLength/2));
+	printf("inPos %d outPos %d :: in %f inF %d oneL %f buffS %d:: %d\n",inPos,outPos,in,inFrame,oneLength, ((buffer->size()-1-inFrame) * oneLength),PMDRAWSPACING + ((buffer->size()-1-inFrame) * oneLength) + (oneLength/2));
 	
 
 	// draw in & out lines
@@ -748,7 +755,7 @@ void VideoHeader::setPlaying(bool isPlaying)
         //create a phasor
         phasors.push_back(new phasorClass());
         phasors[0]->getParameterGroup()->getFloat("BPM") = 60;
-        phasors[0]->getParameterGroup()->getBool("Bounce") = true;
+        //phasors[0]->getParameterGroup()->getBool("Bounce") = true;
 		// if we're entering loop mode move position to in point
 		// this behaviour is to sync entering loop mode with starting at inPoint or outPoint depending on speed
 		this->playing = isPlaying;
