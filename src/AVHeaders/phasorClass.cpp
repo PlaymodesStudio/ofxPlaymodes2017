@@ -34,7 +34,7 @@ phasorClass::phasorClass(int index, ofPoint pos)
     initPhase_Param.addListener(this, &phasorClass::initPhaseChanged);
     
     parametersControl::getInstance().createGuiFromParams(*parameters, ofColor::green);
-    //parametersControl::getInstance().createGuiFromParams(*parameters, ofColor::green);
+    //parametersControl::getInstance().createGuiFromParams(parameters, ofColor::green, pos);
 }
 
 phasorClass::~phasorClass(){

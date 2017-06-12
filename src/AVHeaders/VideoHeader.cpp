@@ -124,8 +124,14 @@ void VideoHeader::draw(){
 	ofDisableAlphaBlending();
 }
 //------------------------------------------------------
-VideoFrame VideoHeader::getNextVideoFrame(){
+VideoFrame VideoHeader::getNextVideoFrame()
+    {
     
+        if(phasors.size()>0)
+            oscillator->phasorIn = phasors[0]->getPhasor();
+        
+ 
+        
     // frame to be returned;
     VideoFrame frame;
     
@@ -145,6 +151,9 @@ VideoFrame VideoHeader::getNextVideoFrame(){
 //------------------------------------------------------
 Timestamp   VideoHeader::getNextTimestampFrame()
 {
+    
+    
+    
     // to be returned
     Timestamp ts;
     
@@ -171,7 +180,8 @@ Timestamp   VideoHeader::getNextTimestampFrame()
     // when playing the loop ...
     else
     {
-        double loopPositionAbsolute = phasors[0]->getPhasor() * (outMs-inMs); //ofMap(loopPositionNormalized, 0, 1, 0, out-in);
+//        double loopPositionAbsolute = phasors[0]->getPhasor() * (outMs-inMs); //ofMap(loopPositionNormalized, 0, 1, 0, out-in);
+        double loopPositionAbsolute = oscillator->getOutput() * (outMs-inMs); //ofMap(loopPositionNormalized, 0, 1, 0, out-in);
         ts = inTS - TimeDiff(loopPositionAbsolute*1000);
         return ts;
     }
@@ -568,6 +578,8 @@ void VideoHeader::setPlaying(bool isPlaying)
         phasors.push_back(new phasorClass());
         phasors[0]->getParameterGroup()->getFloat("BPM") = 60;
         phasors[0]->getParameterGroup()->getBool("Bounce") = true;
+        
+        oscillator = new baseOscillator();
 		// if we're entering loop mode move position to in point
 		// this behaviour is to sync entering loop mode with starting at inPoint or outPoint depending on speed
 		this->playing = isPlaying;

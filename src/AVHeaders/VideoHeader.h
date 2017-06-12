@@ -125,6 +125,7 @@ protected:
     
     //--------- PHASORS
     vector<phasorClass*> phasors;
+    baseOscillator*  oscillator;
 
 };
 }

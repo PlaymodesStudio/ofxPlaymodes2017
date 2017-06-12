@@ -43,6 +43,8 @@ public:
     ofParameter<int>    waveSelect_Param;
     ofParameter<float>  amplitude_Param;
     ofParameter<float>  output;
+    
+    float               getOutput() {return float(output);};
 
 private:
     void computeFunc(float &phasor);
