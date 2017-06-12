@@ -7,7 +7,7 @@
 //
 
 #include "phasorClass.h"
-//#include "parametersControl.h"
+#include "parametersControl.h"
 
 
 phasorClass::phasorClass(int index, ofPoint pos)
@@ -33,7 +33,8 @@ phasorClass::phasorClass(int index, ofPoint pos)
     loop_Param.addListener(this, &phasorClass::loopChanged);
     initPhase_Param.addListener(this, &phasorClass::initPhaseChanged);
     
-//    parametersControl::getInstance().createGuiFromParams(parameters, ofColor::green, pos);
+    parametersControl::getInstance().createGuiFromParams(*parameters, ofColor::green);
+    //parametersControl::getInstance().createGuiFromParams(*parameters, ofColor::green);
 }
 
 phasorClass::~phasorClass(){

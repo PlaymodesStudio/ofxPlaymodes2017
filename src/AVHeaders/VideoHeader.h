@@ -12,6 +12,7 @@
 #include "VideoSource.h"
 #include "VideoBuffer.h"
 #include "phasorClass.h"
+#include "baseOscillator.h"
 
 // acts as a video source and sink
 // controls the position in a buffer
