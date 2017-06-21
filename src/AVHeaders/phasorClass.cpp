@@ -33,8 +33,8 @@ phasorClass::phasorClass(int index, ofPoint pos)
     loop_Param.addListener(this, &phasorClass::loopChanged);
     initPhase_Param.addListener(this, &phasorClass::initPhaseChanged);
     
-    parametersControl::getInstance().createGuiFromParams(*parameters, ofColor::green);
-    //parametersControl::getInstance().createGuiFromParams(parameters, ofColor::green, pos);
+//    parametersControl::getInstance().createGuiFromParams(*parameters, ofColor::green);
+    parametersControl::getInstance().createGuiFromParams(parameters, ofColor::green, pos);
 }
 
 phasorClass::~phasorClass(){
@@ -43,7 +43,7 @@ phasorClass::~phasorClass(){
 
 float phasorClass::getPhasor(){
     if(!offlineMode_Param)
-        //parameters->getFloat("Phasor Monitor") = ofMap(phasorMod, 0, 1, minVal_Param, maxVal_Param);
+        parameters->getFloat("Phasor Monitor") = ofMap(phasorMod, 0, 1, minVal_Param, maxVal_Param);
     return (float)ofMap(phasorMod, 0, 1, minVal_Param, maxVal_Param);
 }
 

@@ -34,7 +34,7 @@ baseOscillator::baseOscillator(int id, bool gui, ofPoint pos){
     
 //        if(gui)
     if(true)
-        parametersControl::getInstance().createGuiFromParams(*parameters, ofColor::orange);// pos);
+        parametersControl::getInstance().createGuiFromParams(parameters, ofColor::orange,pos);
     
     oldPhasor = 0;
     oldValuePreMod = 0;

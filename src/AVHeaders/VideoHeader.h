@@ -11,8 +11,8 @@
 #include "VideoSink.h"
 #include "VideoSource.h"
 #include "VideoBuffer.h"
-#include "phasorClass.h"
-#include "baseOscillator.h"
+//#include "phasorClass.h"
+//#include "baseOscillator.h"
 
 // acts as a video source and sink
 // controls the position in a buffer
@@ -86,8 +86,8 @@ public:
 	void	setWindowPriority(string s);
 	void	setOffsetInFrames(int o);
 
-    // phasors
-    vector<phasorClass*> getPhasors(){return phasors;};
+//    // phasors
+//    vector<phasorClass*> getPhasors(){return phasors;};
     
 protected:
     VideoBuffer		*buffer;			// pointer to the buffer of video frames
@@ -123,9 +123,9 @@ protected:
     Timestamp       currentFrameTs;
     int             currentFrameIndex;
     
-    //--------- PHASORS
-    vector<phasorClass*> phasors;
-    baseOscillator*  oscillator;
+//    //--------- PHASORS
+//    vector<phasorClass*> phasors;
+//    baseOscillator*  oscillator;
 
 };
 }

@@ -70,7 +70,7 @@ void VideoBuffer::newVideoFrame(VideoFrame & frame)
     totalFrames++;
 //    if(size()==0)initTime=frame.getTimestamp();
     TimeDiff tdiff = frame.getTimestamp() - initTime;
-        cout << "Buff::NewVideoFrame:: with TS = " << tdiff << " Which comes from frameTS : " << frame.getTimestamp().raw() << " - initTime " << initTime.raw() << endl;
+        //cout << "Buff::NewVideoFrame:: with TS = " << tdiff << " Which comes from frameTS : " << frame.getTimestamp().raw() << " - initTime " << initTime.raw() << endl;
     frame.setTimestamp(tdiff );
     //timeMutex.lock();
     frames.push_back(frame);
@@ -133,7 +133,6 @@ VideoFrame VideoBuffer::getVideoFrame(Timestamp ts)
             }
             
         }
-        cout << endl;
         //cout<<"Buffer : Getting frame at closest TS : " << ts.raw()<< " :: Closest Position :: " << closestPosition<<endl;
         
         frame = frames[closestPosition];

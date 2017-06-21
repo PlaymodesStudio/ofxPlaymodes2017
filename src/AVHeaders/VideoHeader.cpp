@@ -127,8 +127,8 @@ void VideoHeader::draw(){
 VideoFrame VideoHeader::getNextVideoFrame()
     {
     
-        if(phasors.size()>0)
-            oscillator->phasorIn = phasors[0]->getPhasor();
+//        if(phasors.size()>0)
+//            oscillator->phasorIn = phasors[0]->getPhasor();
         
  
         
@@ -180,13 +180,12 @@ Timestamp   VideoHeader::getNextTimestampFrame()
     // when playing the loop ...
     else
     {
-//        double loopPositionAbsolute = phasors[0]->getPhasor() * (outMs-inMs); //ofMap(loopPositionNormalized, 0, 1, 0, out-in);
-        double loopPositionAbsolute = oscillator->getOutput() * (outMs-inMs); //ofMap(loopPositionNormalized, 0, 1, 0, out-in);
-        ts = inTS - TimeDiff(loopPositionAbsolute*1000);
-        return ts;
+//        double loopPositionAbsolute = oscillator->getOutput() * (outMs-inMs); //ofMap(loopPositionNormalized, 0, 1, 0, out-in);
+//        ts = inTS - TimeDiff(loopPositionAbsolute*1000);
+        ts = nowTS - TimeDiff(delayInMs*1000);
     }
     
-    cout << "Header : getting next TS frame at : " << ts.raw() << endl;
+    //cout << "Header : getting next TS frame at : " << ts.raw() << endl;
 
     return ts;
 }
@@ -449,7 +448,7 @@ void VideoHeader::setInMs(double _in)
 	//this->in=CLAMP(in,out,totalBufferSizeInMs);
     
     this->setLengthMs(outMs-inMs);
-    cout << "Header: SetInMs :: OutMs = " << outMs << " :: InMs = " << inMs << " :: LengthMs" << lengthMs <<endl;
+    //cout << "Header: SetInMs :: OutMs = " << outMs << " :: InMs = " << inMs << " :: LengthMs" << lengthMs <<endl;
 }
 //------------------------------------------------------
 void VideoHeader::setInPct(double _in)
@@ -486,7 +485,7 @@ void VideoHeader::setOutMs(double _out)
     }
     this->setLengthMs(outMs-inMs);
 
-    cout << "Header: SetOutMs :: OutMs = " << outMs << " :: InMs = " << inMs << " :: LengthMs" << lengthMs <<endl;
+    //cout << "Header: SetOutMs :: OutMs = " << outMs << " :: InMs = " << inMs << " :: LengthMs" << lengthMs <<endl;
 }
 //------------------------------------------------------
 void VideoHeader::setOutPct(double _out)
@@ -548,12 +547,12 @@ void VideoHeader::setLoopMode(int loop)
 	else if (loop==1) loopMode = OF_LOOP_NONE;
 }
     
-//------------------------------------------------------
-void VideoHeader::audioRateTrigger(int bufferSize){
-    for(int i = phasors.size()-1 ; i >= 0 ; i--){
-        phasors[i]->audioIn(bufferSize);
-    }
-}
+////------------------------------------------------------
+//void VideoHeader::audioRateTrigger(int bufferSize){
+//    for(int i = phasors.size()-1 ; i >= 0 ; i--){
+//        phasors[i]->audioIn(bufferSize);
+//    }
+//}
 	
 //------------------------------------------------------
 void VideoHeader::setLoopToStart()
@@ -566,26 +565,28 @@ bool VideoHeader::isPlaying()
 	return playing;
 }
 //------------------------------------------------------
-void VideoHeader::setPlaying(bool isPlaying, double speed)
+void VideoHeader::setPlaying(bool _isPlaying, double speed)
 {
+    playing = _isPlaying;
 }		
 //------------------------------------------------------
-void VideoHeader::setPlaying(bool isPlaying)
+void VideoHeader::setPlaying(bool _isPlaying)
 {
-	if(isPlaying)
+    playing = _isPlaying;
+	if(isPlaying())
 	{
-        //create a phasor
-        phasors.push_back(new phasorClass());
-        phasors[0]->getParameterGroup()->getFloat("BPM") = 60;
-        phasors[0]->getParameterGroup()->getBool("Bounce") = true;
-        
-        oscillator = new baseOscillator();
-		// if we're entering loop mode move position to in point
-		// this behaviour is to sync entering loop mode with starting at inPoint or outPoint depending on speed
-		this->playing = isPlaying;
-		int	loopFrame;
-		if(speed>0.0f) loopFrame = this->getInFrames();
-		else loopFrame = this->getOutFrames();
+//        //create a phasor
+//        phasors.push_back(new phasorClass());
+//        phasors[0]->getParameterGroup()->getFloat("BPM") = 60;
+//        phasors[0]->getParameterGroup()->getBool("Bounce") = true;
+//        
+//        oscillator = new baseOscillator();
+//		// if we're entering loop mode move position to in point
+//		// this behaviour is to sync entering loop mode with starting at inPoint or outPoint depending on speed
+//		this->playing = isPlaying;
+//		int	loopFrame;
+//		if(speed>0.0f) loopFrame = this->getInFrames();
+//		else loopFrame = this->getOutFrames();
 		//		if(speed>0.0f) loopFrame = int(double(buffer->size()-1)*(in));
 		//		else loopFrame = int(double(buffer->size()-1)*(out));
 //		int	inAbsFrame  = buffer->getTotalFrames() -  loopFrame;
@@ -593,12 +594,12 @@ void VideoHeader::setPlaying(bool isPlaying)
 	}
 	else
 	{
-        delete phasors[0];
-        phasors.pop_back();
+//        delete phasors[0];
+//        phasors.pop_back();
 		// if we're gettint out of loop mode move delay to actual position
 		// this behaviour is to let the header (set by delay on no loop) where the loop was when deactivated
 		// other beahaviour could be to let the header on delay / inPoint / outPoint position when loop is turned off
-		this->playing = isPlaying;
+//		this->playing = isPlaying;
 //		delay = (actualFrame-1)*oneFrame;
 	}
 }
