@@ -28,66 +28,29 @@ public:
 
     void setup(VideoBuffer & buffer);
     void draw();
+    
+    VideoBuffer *getBuffer();
+
     VideoFrame  getNextVideoFrame();
 	VideoFrame  getVideoFrame(int index);
-    int         getNextPosition();
-    Timestamp   getNextTimestampFrame();
-    VideoBuffer *getBuffer();
+    Timestamp   getNextFrameTimestamp();
+    //    int         getNextPosition();
 	
-	// delay
-    int		getDelayMs();
-    int		getDelayFrames();
-    double	getDelayPct() ;
+	// in&out drawing
+    void setInMs(double _in);
+    void setOutMs(double _out);
+    
+    int		getDelayMs(){return delayInMs;};
     void	setDelayMs(double delay);
-    void	setDelayFrames(int delay);
-    void	setDelayPct(double pct);
-	// in 
-    double	getInMs();
-	double	getInFrames();
-    void	setInMs(double in);
-    void	setInFrames(int in);
-    void	setInPct(double in);
-	// out 
-    double	getOutMs() ;
-	double	getOutFrames();
-    void	setOutMs(double out);
-    void	setOutFrames(int out);
-    void	setOutPct(double out);
-	// length
-	double	getLength();
-	double	getLengthFrames();
-    void	setLengthMs(double length);
-    void	setLengthFrames(int length);
-    void	setLengthPct(double length);
-	// speed
-    double	getSpeed();
-    void	setSpeed(double speed);
-	// loop mode
-	int		getLoopMode();
-	void	setLoopMode(int loop);
-	bool	isPlaying();
-	void	setPlaying(bool loopMode);
-	void	setPlaying(bool loopMode, double speed);
-	void	setLoopToStart();
-    void    audioRateTrigger(int bufferSize);
-	
-	// 
-	int		getOpacity();
-	void	setOpacity(int opacity);
+
     float	getFps();
     void	setFps(float fps);
-	void	setDriveMode(int mode);
 	
 	// events
 	void 	receivedLoopEvent(int &i);
 	string	getInfo();
-	
-	// 
-	void	setWindowPriority(string s);
 	void	setOffsetInFrames(int o);
 
-//    // phasors
-//    vector<phasorClass*> getPhasors(){return phasors;};
     
 protected:
     VideoBuffer		*buffer;			// pointer to the buffer of video frames
@@ -122,10 +85,6 @@ protected:
     Timestamp       inTS, outTS;
     Timestamp       currentFrameTs;
     int             currentFrameIndex;
-    
-//    //--------- PHASORS
-//    vector<phasorClass*> phasors;
-//    baseOscillator*  oscillator;
 
 };
 }
