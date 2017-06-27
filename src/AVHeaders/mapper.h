@@ -6,49 +6,38 @@
 //
 //
 
-#ifndef maper_h
-#define phasorClass_h
+#ifndef mapper_h
+#define mapper_h
 
 #pragma once
 
 #include "ofMain.h"
 
 
-class phasorClass{
+class mapper{
 public:
-    phasorClass(int index = 0, ofPoint pos = ofPoint(-1, -1));
-    ~phasorClass();
+    mapper(int index = 0, ofPoint pos = ofPoint(-1, -1));
+    ~mapper();
     void setup(int index = 0);
-    
-    float getPhasor();
-    void resetPhasor(bool &reset);
-    
-    void audioIn(int bufferSize);
-    void loopChanged(bool &val);
-    
-    void nextFrame();
+    float getRange();    
+    void resetRange();
     
     ofParameterGroup* getParameterGroup(){return parameters;};
-    
+    void recalculate(float& f);
+
 private:
-    void initPhaseChanged(float &f);
     
     ofParameterGroup*    parameters;
-    ofParameter<double>  phasor;
-    ofParameter<double>  phasorMod;
-    ofParameter<float>  bpm_Param;
-    ofParameter<int>    beatsMult_Param;
-    ofParameter<int>    beatsDiv_Param;
-    ofParameter<float>  initPhase_Param;
-    ofParameter<int>    quant_Param;
-    ofParameter<float>  phasorMonitor;
-    ofParameter<float>  minVal_Param;
-    ofParameter<float>  maxVal_Param;
-    ofParameter<bool>   loop_Param;
-    ofParameter<bool>   bounce_Param;
-    ofParameter<bool>   resetPhase_Param;
-    ofParameter<bool>   offlineMode_Param;
+    ofParameter<float>  Input;
+    ofParameter<float>  MinInput;
+    ofParameter<float>  MaxInput;
+    ofParameter<float>  MinOutput;
+    ofParameter<float>  MaxOutput;
+    ofParameter<float>  Output;
+    
+
+    
 };
 
 
-#endif /* phasor_h */
+#endif /* mapper_h */
