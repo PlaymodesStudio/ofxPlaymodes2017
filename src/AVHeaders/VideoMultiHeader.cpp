@@ -5,59 +5,69 @@
  *      Author: arturo castro
  */
 
-#include "VideoHeader.h"
+#include "VideoMultiHeader.h"
 
 namespace ofxPm{
-VideoHeader::VideoHeader(VideoBuffer & buffer){
+VideoMultiHeader::VideoMultiHeader(VideoBuffer & buffer){
 setup(buffer);
 }
 
 //------------------------------------------------------
-VideoHeader::VideoHeader(){
+VideoMultiHeader::VideoMultiHeader(){
     fps         = 25.0;
 	oneFrameMs	= 1000.0 / fps;
+    speed       = 1;
     inMs        = 0;
     outMs       = 0;
 	lengthMs		= inMs - outMs;
+	opacity		= 255;
+    playing     = false;
+	loopStart	= false;
+	loopMode	= OF_LOOP_NORMAL;
+	driveMode	= 0;
 	buffer 		= NULL;
+	windowPriority = "in";
 	lengthMs = 0;
 	offsetFrames = 0.0;
 	width = -11;
 	height = -11;
-    playing=false;
 }
 
 
 //------------------------------------------------------
-void VideoHeader::setup(VideoBuffer & _buffer){
+void VideoMultiHeader::setup(VideoBuffer & _buffer){
     //newFrameEvent.init("Playmodes.VideoHeader.newFrame");
     this->buffer= &_buffer;
     fps         = _buffer.getFps();
 	this->buffer->clear();
-    oneFrameMs	= 1000.0 / fps;
-	totalBufferSizeInMs = _buffer.size() * oneFrameMs;
+	totalBufferSizeInMs = _buffer.size() * (1000.0/fps);
+	oneFrameMs	= 1000.0 / fps;
+    speed       = 1;
     inMs        = totalBufferSizeInMs;
     outMs       = 0;
 	lengthMs	= totalBufferSizeInMs;
+    playing   	= false;
+	opacity		= 255;
+	loopStart	= false;
+	loopMode	= OF_LOOP_NORMAL;
+	driveMode	= 0;
+	windowPriority = "in";
 	offsetFrames = 0.0;
-    playing=false;
-
 	
 	VideoSource::width = _buffer.getWidth();
 	VideoSource::height = _buffer.getHeight();
 	
-	printf("VideoHeader::setup %d %d FPS %f\n",VideoSource::width,VideoSource::height,fps);
+	printf("VideoMultiHeader::setup %d %d FPS %f\n",VideoSource::width,VideoSource::height,fps);
 }
 
 //------------------------------------------------------
-VideoHeader::~VideoHeader(){
+VideoMultiHeader::~VideoMultiHeader(){
 }
 
 //------------------------------------------------------
-void VideoHeader::draw(){
+void VideoMultiHeader::draw(){
 	
-    // DRAWS THE BUFFER UI, NO TEXTURE AT ALL !!
-    
+    /*
 	ofEnableAlphaBlending();
 	
     double oneLength=(double)(ofGetWidth()-PMDRAWSPACING*2)/(double)(buffer->getMaxSize());
@@ -112,9 +122,11 @@ void VideoHeader::draw(){
     ofSetColor(255,255,255);
 	
 	ofDisableAlphaBlending();
+     
+     */
 }
 //------------------------------------------------------
-VideoFrame VideoHeader::getNextVideoFrame()
+VideoFrame VideoMultiHeader::getNextVideoFrame()
     {
         
     // frame to be returned;
@@ -134,7 +146,7 @@ VideoFrame VideoHeader::getNextVideoFrame()
 }
 
 //------------------------------------------------------
-Timestamp   VideoHeader::getNextFrameTimestamp()
+Timestamp   VideoMultiHeader::getNextFrameTimestamp()
 {
     // to be returned
     Timestamp ts;
@@ -153,21 +165,23 @@ Timestamp   VideoHeader::getNextFrameTimestamp()
     outTS = nowTS - TimeDiff(outMs*1000);
     
     // calculate the ts of the needed frame
-    ts = nowTS - TimeDiff(delayInMs*1000);
+    
+    // Multiheader ??
+    //ts = nowTS - TimeDiff(delayInMs*1000);
 
     return ts;
 }
 
 //------------------------------------------------------
-float VideoHeader::getFps(){
+float VideoMultiHeader::getFps(){
     return fps;
 }
 //------------------------------------------------------
-void VideoHeader::setFps(float fps){
+void VideoMultiHeader::setFps(float fps){
     this->fps=fps;
 }
 //------------------------------------------------------
-/*VideoFrame VideoHeader::getVideoFrame(int index)
+VideoFrame VideoMultiHeader::getVideoFrame(int index)
 {
 	buffer->lock();
 		int indexFrame = CLAMP(index,0,buffer->size()-1);
@@ -175,43 +189,96 @@ void VideoHeader::setFps(float fps){
 	buffer->unlock();
 	return frame;
 }
- */
 //------------------------------------------------------
-VideoBuffer *VideoHeader::getBuffer()
+VideoBuffer *VideoMultiHeader::getBuffer()
 {
     return buffer;
 }
 
 //------------------------------------------------------
-void VideoHeader::setDelayMs(double _delayMs)
+void VideoMultiHeader::setMultiDelayMs(vector<double> _multiDelayMs)
 {
-    delayInMs = _delayMs;
+    //delayInMs = _delayMs;
 }
 
 
 		
 //------------------------------------------------------
-string VideoHeader::getInfo()
+string VideoMultiHeader::getInfo()
 {
-    return "";
+//	string s;
+//
+//	if(playing) oneFrameMs=(TimeDiff)(1000000.0/fps/speed);
+//	else oneFrameMs=(TimeDiff)(1000000.0/fps/1.0);
+//	
+//	int buffer_size=buffer->size();
+//	int totalNumFr = buffer->getTotalFrames();
+//	int lastAbsFrame = totalNumFr - buffer_size; 
+//	int inFrame  = this->getInFrames();
+//	int	outFrame = this->getOutFrames();
+//	int inAbsFrame  = totalNumFr -  inFrame;
+//	int outAbsFrame = totalNumFr - outFrame;
+//	
+//	s = "Video Header >> Buff_" +ofToString(buffer_size) 
+//		+" || TotalF_" + ofToString(totalNumFr)
+//		+" || LastAbsF_" + ofToString(lastAbsFrame)
+//		+" || inF_" + ofToString(inFrame) 
+//		+" || in_" + ofToString(inMs)
+//		+" || outF_" + ofToString(outFrame)
+//		+" || out_" + ofToString(outMs)
+//		+" || inAbsF_" + ofToString(inAbsFrame)
+//		+" || outAbFs_" + ofToString(outAbsFrame)
+//	    +"\n"
+//
+//
+//	;
+//
+//	return s;
 }
 	
 //------------------------------------------------------
-void	VideoHeader::setOffsetInFrames(int _o)
+void	VideoMultiHeader::setOffsetInFrames(int o)
 {
-	offsetFrames = _o;
+	offsetFrames = o;
 }
 
 //------------------------------------------------------
-void VideoHeader::setInMs(double _in)
+void VideoMultiHeader::setInMs(double _in)
 {
-    this->inMs = _in;
+    // needs more precise control related to bufferMarkers !! (TO DO)
+    /*
+     double oneFrameMs=(TimeDiff)(1000000.0/fps/1.0);
+     double fAux = double(in*1000.0) / (oneFrameMs*double(buffer->size()));
+     printf("VH::setInMs faux %f",fAux);
+     this->setInPct(CLAMP(fAux,0.0,1.0));
+     */
+    if(windowPriority=="in")
+    {
+        this->inMs = _in;
+    }
+    else if (windowPriority=="length")
+    {
+        if(inMs<=lengthMs)
+        {
+            this->inMs=lengthMs;
+        }
+        else
+        {
+            this->inMs = _in;
+        }
+        // update the state of out
+        this->outMs = this->inMs - lengthMs;
+    }
+    
+    // we clamp it to the out limit ... in could not be "smaller"(bigger really) then in
+    //this->in=CLAMP(in,out,totalBufferSizeInMs);
 }
 
 //------------------------------------------------------
-void VideoHeader::setOutMs(double _out)
+void VideoMultiHeader::setOutMs(double _out)
 {
     this->outMs = _out;
+    //cout << "Header: SetOutMs :: OutMs = " << outMs << " :: InMs = " << inMs << " :: LengthMs" << lengthMs <<endl;
 }
     
 }

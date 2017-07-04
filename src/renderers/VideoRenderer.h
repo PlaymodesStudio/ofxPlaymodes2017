@@ -14,7 +14,9 @@
 
 
 namespace ofxPm{
+
 class VideoRenderer: public VideoSink {
+
 public:
 	VideoRenderer();
 	VideoRenderer(VideoSource & source);
@@ -23,7 +25,8 @@ public:
 	void setup(VideoSource & source);
 
 	void draw();
-
+    void draw(int x,int y,int w,int h);
+    
     ofShader getShader() const;
     ofColor getTint() const;
     bool isMinmaxBlend() const;
@@ -36,6 +39,7 @@ public:
 
 private:
     void drawNextFrame();
+    void drawNextFrame(int x,int y,int w,int h);
     VideoSource *source;
     ofShader shader;
 

@@ -18,6 +18,10 @@
 #include "AudioSample.h"
 #include "AudioBufferSamples.h"
 #include "AudioBufferSamplesMarker.h"
+#include "MultixRenderer.h"
+
+#include "VideoHeader.h"
+#include "BasicVideoRenderer.h"
 
 #endif
 

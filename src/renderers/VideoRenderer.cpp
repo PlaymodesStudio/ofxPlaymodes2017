@@ -65,6 +65,41 @@ void VideoRenderer::draw(){
 
 }
 
+    void VideoRenderer::draw(int x,int y,int w,int h){
+        if(shaderActive)
+            shader.begin();
+        if(tint.a<255){
+            ofEnableAlphaBlending();
+            
+            if(minmaxBlend){
+                glBlendEquationEXT(GL_MAX);
+                
+                //glBlendFuncSeparateEXT( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_DST_ALPHA );
+                //glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+                //glBlendEquationSeparateEXT(GL_MAX,GL_ADD);
+            }else{
+                glBlendEquationEXT(GL_MIN);
+                
+                
+                //glBlendFuncSeparateEXT( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_DST_ALPHA );
+                //glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+                //glBlendEquationSeparateEXT(GL_MIN,GL_ADD);
+            }
+            ofSetColor(tint);
+            /// drawing the video render
+            drawNextFrame(x,y,w,h);
+            glBlendEquationEXT(GL_FUNC_ADD);
+            ofDisableAlphaBlending();
+        }else{
+            ofSetColor(tint);
+            drawNextFrame();
+        }
+        if(shaderActive)
+            shader.end();
+        
+    }
+
+    
 void VideoRenderer::drawNextFrame(){
     VideoFrame frame = source->getNextVideoFrame();
     if(frame!=NULL){
@@ -72,6 +107,16 @@ void VideoRenderer::drawNextFrame(){
     }
 }
 
+void VideoRenderer::drawNextFrame(int x,int y,int w,int h)
+{
+    VideoFrame frame = source->getNextVideoFrame();
+    if(frame!=NULL){
+        frame.getTextureRef().draw(x,y,w,h);
+    }
+    
+}
+    
+    
 ofShader VideoRenderer::getShader() const
 {
     return shader;

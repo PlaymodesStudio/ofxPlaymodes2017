@@ -32,8 +32,7 @@ baseOscillator::baseOscillator(int id, bool gui, ofPoint pos){
     
     phasorIn.addListener(this, &baseOscillator::computeFunc);
     
-//        if(gui)
-    if(true)
+    if(gui)
         parametersControl::getInstance().createGuiFromParams(parameters, ofColor::orange,pos);
     
     oldPhasor = 0;
