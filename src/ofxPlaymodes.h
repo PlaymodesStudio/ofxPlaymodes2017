@@ -2,6 +2,7 @@
 #define _PLAYMODES_H
 
 #include "VideoGrabber.h"
+#include "VideoGrabberPS3Eye.h"
 #include "FileGrabber.h"
 #include "AudioGrabber.h"
 

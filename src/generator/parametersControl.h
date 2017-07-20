@@ -204,7 +204,8 @@ public:
     void setup();
     void update(ofEventArgs &args);
     void draw(ofEventArgs &args);
-    
+    void setSliderPrecision(int guiId, string sliderName, int p);
+
     void onGuiButtonEvent(ofxDatGuiButtonEvent e);
     void onGuiToggleEvent(ofxDatGuiToggleEvent e);
     void onGuiDropdownEvent(ofxDatGuiDropdownEvent e);
@@ -258,6 +259,9 @@ public:
     ofEvent<pair<moduleType, ofPoint>>  createNewModule;
     ofEvent<string>                     destroyModule;
     ofEvent<void>                       nextFrameEvent;
+    
+    ofxDatGui* getGui(){return datGui;};
+
 private:
     
     void setFromNormalizedValue(ofAbstractParameter* p, float v);

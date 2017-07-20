@@ -46,7 +46,7 @@ void VideoHeader::setup(VideoBuffer & _buffer){
 	VideoSource::width = _buffer.getWidth();
 	VideoSource::height = _buffer.getHeight();
 	
-	printf("VideoHeader::setup %d %d FPS %f\n",VideoSource::width,VideoSource::height,fps);
+	printf("VideoHeader::setup %d %d @ FPS %f\n",_buffer.getWidth(),_buffer.getHeight(),fps);
 }
 
 //------------------------------------------------------

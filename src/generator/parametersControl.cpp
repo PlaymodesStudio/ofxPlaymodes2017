@@ -1524,3 +1524,12 @@ void parametersControl::destroyedConnection(ofAbstractParameter &disconnectedPar
         }
     }
 }
+
+void parametersControl::setSliderPrecision(int guiId,string sliderName, int p)
+{
+    ofxDatGuiSlider* s = datGuis[guiId]->getSlider(sliderName);
+    s->setPrecision(p);
+    cout << "Setting precision for slider : " << s->getLabel() << " label : " << sliderName <<  " __ from gui : " << datGuis[guiId]->getHeader()->getLabel() <<endl;
+    
+}
+

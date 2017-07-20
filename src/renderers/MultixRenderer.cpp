@@ -103,9 +103,10 @@ void MultixRenderer::updateValues(vector<float> _vf)
         //videoHeader[i].setDelayMs(delayOffset*1000*i);
 
         float oneFrameMs = (1.0 / 30.0) * 1000.0;
-        float totalLengthInMs = 720.0 * oneFrameMs;
+        float totalLengthInMs = videoBuffer->getMaxSize() * oneFrameMs;
         
-        float myDelayMs = ofMap(_vf[i],0,1.0,0.0,totalLengthInMs);
+        //float myDelayMs = ofMap(_vf[i],0,1.0,0.0,totalLengthInMs);
+        float myDelayMs = delayOffset*100*i;
         videoHeader[i].setDelayMs(myDelayMs);
         
        // cout << "Updating Values VF [" << i << "]" << " : " << _vf[i] << " VALUE : " << myDelayMs << " Total Length in Ms :" << totalLengthInMs << endl;
@@ -165,9 +166,9 @@ bool MultixRenderer::isMinmaxBlend() const
     return minmaxBlend;
 }
 
-void MultixRenderer::setDelayOffset(float delayOffset)
+void MultixRenderer::setDelayOffset(float _delayOffset)
 {
-    this->delayOffset = delayOffset;
+    this->delayOffset = _delayOffset;
 }
 
 void MultixRenderer::setIn(float in)
