@@ -3,6 +3,7 @@
 
 #include "VideoGrabber.h"
 #include "VideoGrabberPS3Eye.h"
+#include "VideoGrabberDeckLink.h"
 #include "FileGrabber.h"
 #include "AudioGrabber.h"
 

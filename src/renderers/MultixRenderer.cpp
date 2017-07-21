@@ -102,7 +102,7 @@ void MultixRenderer::updateValues(vector<float> _vf)
         
         //videoHeader[i].setDelayMs(delayOffset*1000*i);
 
-        float oneFrameMs = (1.0 / 30.0) * 1000.0;
+        float oneFrameMs = (1.0 / 60.0) * 1000.0;
         float totalLengthInMs = videoBuffer->getMaxSize() * oneFrameMs;
         
         //float myDelayMs = ofMap(_vf[i],0,1.0,0.0,totalLengthInMs);
