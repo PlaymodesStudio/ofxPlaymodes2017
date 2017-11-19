@@ -21,7 +21,7 @@
 #include "MultixRenderer.h"
 
 
-
+#include "MultixFilter.h"
 #include "VideoTestShaderFX.h"
 
 #include "AudioSample.h"

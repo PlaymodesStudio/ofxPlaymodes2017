@@ -22,11 +22,6 @@ MultixRenderer::~MultixRenderer()
 MultixRenderer::MultixRenderer(){
 	minmaxBlend=0;
 
-	delayOffset=0;
-	speedOffset=0;
-
-	in=0; out=1;
-	loopMode=0;
 
 	numHeaders=0;
 }
@@ -35,12 +30,6 @@ void MultixRenderer::setup(VideoBuffer & buffer, int _numHeaders){
 
     videoBuffer=&buffer;
     numHeaders=_numHeaders;
-
-    delayOffset=0;
-    speedOffset=0;
-
-    in=0; out=1;
-    loopMode=0;
 
     videoHeader.resize(numHeaders);
     videoRenderer.resize(numHeaders);
@@ -56,11 +45,6 @@ void MultixRenderer::setup(VideoBuffer & buffer, int _numHeaders){
     }
     
     minmaxBlend=false;
-//    shaderActive=true;
-//    lumaThreshold=0.0;
-//    lumaSmooth=0.0;
-//    
-//    shader.load("shaders/lumakey");
 
 }
 
@@ -72,36 +56,6 @@ int MultixRenderer::getNumHeaders(){
     return videoHeader.size();
 }
 
-//--------------------------------------------------------
-void MultixRenderer::update()
-{
-//    cout << "MultixRenderer::update()" << endl;
-//    int currNumHeaders = videoHeader.size();
-//    if(currNumHeaders!=numHeaders){
-//		videoHeader.resize(numHeaders);
-//		videoRenderer.resize(numHeaders);
-//		for(int i=0;i<numHeaders;i++){
-//			videoHeader[i].setup(*videoBuffer);
-//			videoRenderer[i].setup(videoHeader[i]);
-//		}
-//        cout << "Multix::Renderer::Update WARNING : currNumHeaders!=numHeaders" << endl;
-//    }
-//
-//    //videoRenderer[0]->speed=
-//    for(int i=videoRenderer.size()-1; i>=0; i--){
-//        //videoHeader[i].setIn(in);
-//        //videoHeader[i].setOut(out);
-//        //videoHeader[i].setLoopMode(loopMode);
-//
-//        // This worked :
-//        //videoHeader[i].setDelayMs(delayOffset*1000*i);
-//
-//        //videoHeader[i].setSpeed(videoHeader[0].getSpeed()+speedOffset*i);
-//        //        videoRenderer[i].setTint(tint);
-//        //        videoRenderer[i].setMinmaxBlend(minmaxBlend);
-//        //videoRenderer[i].activateShader=activateShader;
-//    }
-}
 
 //--------------------------------------------------------
 void MultixRenderer::updateValuesMs(vector<float> _vf)
@@ -129,6 +83,7 @@ void MultixRenderer::updateValuesMs(vector<float> _vf)
     videoHeader[0].setDelayMs(0);
 
 }
+    
 //--------------------------------------------------------
 void MultixRenderer::updateValuesPct(vector<float> _vf)
 {
@@ -168,11 +123,6 @@ void MultixRenderer::updateValuesPct(vector<float> _vf)
 //--------------------------------------------------------
 void MultixRenderer::draw(int x, int y,int w, int h)
 {
-//    if(shaderActive)
-//    {
-////        shader.begin();
-//    }
-//    
 
     ofEnableAlphaBlending();
     
@@ -200,12 +150,7 @@ void MultixRenderer::draw(int x, int y,int w, int h)
     
     ofDisableAlphaBlending();
     
-//    if(shaderActive)
-//    {
-//        shader.end();
-//    }
 
-    
     // Draw Multix Shit
 //    int copyWidth = 640.0 / float(videoBuffer->getMaxSize());
     int copyWidth = 640.0 / float(videoHeader.size());
@@ -220,37 +165,9 @@ void MultixRenderer::draw(int x, int y,int w, int h)
     float totalLengthInMs = videoBuffer->getMaxSize() * oneFrameMs;
     int maxHeight = 100 * (totalLengthInMs/1000.0);
     ofDrawLine(0,500 + maxHeight , 640, 500 + maxHeight);
+    ofSetColor(255);
 }
 
-float MultixRenderer::getDelayOffset() const
-{
-    return delayOffset;
-}
-
-float MultixRenderer::getIn() const
-{
-    return in;
-}
-
-int MultixRenderer::getLoopMode() const
-{
-    return loopMode;
-}
-
-float MultixRenderer::getOut() const
-{
-    return out;
-}
-
-float MultixRenderer::getSpeedOffset() const
-{
-    return speedOffset;
-}
-
-ofColor MultixRenderer::getTint() const
-{
-    return tint;
-}
 
 VideoBuffer *MultixRenderer::getVideoBuffer() const
 {
@@ -262,50 +179,16 @@ bool MultixRenderer::isMinmaxBlend() const
     return minmaxBlend;
 }
 
-void MultixRenderer::setDelayOffset(float _delayOffset)
-{
-    this->delayOffset = _delayOffset;
-}
-
-void MultixRenderer::setIn(float in)
-{
-    this->in = in;
-}
-
-void MultixRenderer::setLoopMode(int loopMode)
-{
-    this->loopMode = loopMode;
-}
 
 void MultixRenderer::setMinmaxBlend(bool b)
 {
     this->minmaxBlend = b;
-//    for(int i=0;i<videoRenderer.size();i++)
-//    {
-//        videoRenderer[i].setMinmaxBlend(b);
-//    }
-}
-
-void MultixRenderer::setOut(float out)
-{
-    this->out = out;
-}
-
-void MultixRenderer::setSpeedOffset(float speedOffset)
-{
-    this->speedOffset = speedOffset;
-}
-
-void MultixRenderer::setTint(ofColor tint)
-{
-    this->tint = tint;
 }
 
 void MultixRenderer::setVideoBuffer(VideoBuffer *videoBuffer)
 {
     this->videoBuffer = videoBuffer;
 }
-
 
 VideoHeader * MultixRenderer::getHeader(int header){
 	return &videoHeader[header];

@@ -10,8 +10,8 @@
 namespace ofxPm{
 VideoSource::VideoSource() {
 	//newFrameEvent.init("PlayModes.VideoSource.newFrameEvent");
-	width=-13;
-	height=-13;
+	width=-11;
+	height=-11;
 }
 
 VideoSource::~VideoSource() {
