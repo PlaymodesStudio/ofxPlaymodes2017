@@ -501,6 +501,11 @@ void parametersControl::setGlobalBPM(float bpm){
     }
 }
 
+float parametersControl::getGlobalBPM()
+{
+    return datGui->getSlider("Global BPM")->getValue();
+}
+
 bool parametersControl::loadPresetsSequence(){
     // this is our buffer to stroe the text data
     ofBuffer buffer = ofBufferFromFile("PresetsSequencing.txt");
@@ -1479,6 +1484,9 @@ void parametersControl::setFromSameTypeValue(shared_ptr<nodeConnection> connecti
                     pos2.setHue(ofMap(pos2.getHue(), 0, 1, connection->getMin(), connection->getMax()));
             }
             sink->cast<vector<vector<ofColor>>>() = tempVec;
+        }
+        else{
+            sink = source;
         }
     }else{
         for(auto &connection : connections){

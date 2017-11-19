@@ -17,6 +17,7 @@
 // based on speed, delay, fps and loop in/out
 
 namespace ofxPm{
+    
 class VideoHeader:public VideoSink, public VideoSource{
 public:
 	
@@ -45,6 +46,7 @@ public:
     string	getInfo();
     void	setOffsetInFrames(int _o);
 	
+    double  getBufferSizeInMs(){return totalBufferSizeInMs;};
     
 protected:
     VideoBuffer		*buffer;			// pointer to the buffer of video frames

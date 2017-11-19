@@ -28,6 +28,8 @@ public:
 	
 	int getWidth();
 	int getHeight();
+    
+    
 };
 }
 #endif /* VIDEOSOURCE_H_ */

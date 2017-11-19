@@ -15,15 +15,20 @@
 #include "OscInterface.h"
 #include "HeaderLooperRenderer.h"
 
+#include "VideoHeader.h"
 #include "BasicVideoRenderer.h"
-#include "avLooperRenderer.h"
+#include "VideoRenderer.h"
+#include "MultixRenderer.h"
+
+
+
+#include "VideoTestShaderFX.h"
+
 #include "AudioSample.h"
 #include "AudioBufferSamples.h"
 #include "AudioBufferSamplesMarker.h"
-#include "MultixRenderer.h"
-
-#include "VideoHeader.h"
-#include "BasicVideoRenderer.h"
+//#include "avLooperRenderer.h"
+//#include "VideoRendererLumaKey.h"
 
 #endif
 

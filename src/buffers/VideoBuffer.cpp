@@ -29,7 +29,8 @@ VideoBuffer::VideoBuffer()
 }
 
 
-void VideoBuffer::setup(VideoSource & _source, int size, bool allocateOnSetup){
+void VideoBuffer::setup(VideoSource & _source, int size, bool allocateOnSetup)
+    {
 	source=&_source;
 	totalFrames=0;
 	maxSize = size;

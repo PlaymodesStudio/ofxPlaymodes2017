@@ -252,7 +252,8 @@ public:
     
     void loadBank();
     
-    void setGlobalBPM(float bpm);
+    void  setGlobalBPM(float bpm);
+    float getGlobalBPM();
     
     void destroyedConnection(ofAbstractParameter &disconnectedParameter);
     

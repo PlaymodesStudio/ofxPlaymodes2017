@@ -50,7 +50,9 @@ void baseOscillator::computeFunc(float &phasor){
 //    k *=  freq_Param * ((float)indexCount_Param/(float)indexQuant_Param); //Index Modifiers
     
     
-    float linPhase = fmod(w+k, 2*PI) / (2*PI);
+//    float linPhase = fmod(w+k, 2*PI) / (2*PI);
+    float linPhase = float(w+k) / float(2*PI);
+    linPhase = linPhase > 1 ? linPhase-(int)linPhase : linPhase;
     float val = 0;
     switch (static_cast<oscTypes>(waveSelect_Param.get()+1)){
         case sinOsc:

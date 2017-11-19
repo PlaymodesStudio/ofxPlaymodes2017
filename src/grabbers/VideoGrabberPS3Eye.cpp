@@ -24,6 +24,8 @@ bool VideoGrabberPS3Eye::initGrabber(int w, int h){
         eye = devices.at(0);
         bool res = eye->init(w, h, 60);
         eye->start();
+        width = eye->getWidth();
+        height = eye->getHeight();
         
         videoFrame 	= new unsigned char[eye->getWidth()*eye->getHeight()*3];
         //        videoTexture.allocate(eye->getWidth(), eye->getHeight(), GL_BGR_EXT);

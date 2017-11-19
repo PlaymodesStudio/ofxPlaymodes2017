@@ -34,6 +34,7 @@ private:
 	ofPBO		pbo;
 	bool		updateTex;
 	
+    
 };
 }
 #endif /* BASICVIDEORENDERER_H_ */

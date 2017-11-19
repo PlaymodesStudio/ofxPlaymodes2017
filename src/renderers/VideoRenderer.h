@@ -20,33 +20,16 @@ class VideoRenderer: public VideoSink {
 public:
 	VideoRenderer();
 	VideoRenderer(VideoSource & source);
-	virtual ~VideoRenderer();
+	~VideoRenderer();
 
-	void setup(VideoSource & source);
+	virtual void setup(VideoSource & source);
 
 	void draw();
     void draw(int x,int y,int w,int h);
     
-    ofShader getShader() const;
-    ofColor getTint() const;
-    bool isMinmaxBlend() const;
-    bool isShaderActive() const;
-
-    void setMinmaxBlend(bool minmaxBlend);
-    void setShader(ofShader shader);
-    void setShaderActive(bool shaderActive);
-    void setTint(ofColor tint);
-
 private:
-    void drawNextFrame();
-    void drawNextFrame(int x,int y,int w,int h);
+    virtual void drawNextFrame(int x,int y,int w,int h);
     VideoSource *source;
-    ofShader shader;
-
-    ofColor tint;
-
-	bool minmaxBlend;
-	bool shaderActive;
 };
 }
 
