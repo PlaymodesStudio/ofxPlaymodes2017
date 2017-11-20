@@ -81,7 +81,6 @@ void MultixFilter::updateValuesMs(vector<float> _vf)
 {
     // CLEAN headers and renderers and resize the to new
     numHeaders = _vf.size();
-    cout << "MultixRender::updateValuesMs" << endl;
     int currNumHeaders = videoHeader.size();
     if(currNumHeaders!=numHeaders){
         videoHeader.resize(numHeaders);
@@ -147,7 +146,6 @@ VideoFrame MultixFilter::getNextVideoFrame()
     //    {
     //        return source->getNextVideoFrame();
     //    }
-    cout << " MultixFilter : getNextVF"  << endl;
     //newVideoFrame(frame);
     return frame;
     
@@ -183,8 +181,6 @@ void MultixFilter::newVideoFrame(VideoFrame & _frame)
     frame = VideoFrame::newVideoFrame(fbo);
     ofNotifyEvent(newFrameEvent,frame);
     
-    cout << " MultixFilter : newVideoFrame Notifying event !! "  << endl;
-
 }
 
 //--------------------------------------------------------
@@ -226,11 +222,8 @@ void MultixFilter::draw(int x, int y,int w, int h)
             headersInAction++;
             ofSetColor((opac*255.0));
             videoRenderer[i].draw(x,y,w,h);
-            cout << i << " : " << opac << endl;
         }
 	}
-    cout << "MultixFilter::HeadersInAction = " << headersInAction << " Buff FPS : " << videoBuffer->getFps() << endl;
-    
     ofDisableAlphaBlending();
 
     
