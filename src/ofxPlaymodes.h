@@ -19,6 +19,7 @@
 #include "BasicVideoRenderer.h"
 #include "VideoRenderer.h"
 #include "MultixRenderer.h"
+#include "VideoTrioRenderer.h"
 
 
 #include "MultixFilter.h"

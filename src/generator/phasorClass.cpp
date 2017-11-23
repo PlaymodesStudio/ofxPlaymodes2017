@@ -16,8 +16,8 @@ phasorClass::phasorClass(int index, ofPoint pos)
     parameters = new ofParameterGroup;
     parameters->setName("phasor " + ofToString(index));
     parameters->add(bpm_Param.set("BPM", 120, 0, 999));
-    parameters->add(beatsDiv_Param.set("Beats Div", 1, 1, 64));
-    parameters->add(beatsMult_Param.set("Beats Mult", 1, 1, 12));
+    parameters->add(beatsDiv_Param.set("Beats Div", 1, 1, 512));
+    parameters->add(beatsMult_Param.set("Beats Mult", 1, 1, 512));
     parameters->add(quant_Param.set("Quantization", 40, 1, 40));
     parameters->add(initPhase_Param.set("Initial Phase", 0, 0, 1));
     parameters->add(minVal_Param.set("Min Value", 0, 0, 1));
@@ -33,7 +33,6 @@ phasorClass::phasorClass(int index, ofPoint pos)
     loop_Param.addListener(this, &phasorClass::loopChanged);
     initPhase_Param.addListener(this, &phasorClass::initPhaseChanged);
     
-//    parametersControl::getInstance().createGuiFromParams(*parameters, ofColor::green);
     parametersControl::getInstance().createGuiFromParams(parameters, ofColor::green, pos);
 }
 
@@ -48,12 +47,12 @@ float phasorClass::getPhasor(){
 }
 
 void phasorClass::resetPhasor(bool &reset){
-    phasor = initPhase_Param;
-    phasorMod = initPhase_Param;
+    phasor = 0;
+    phasorMod = ofMap(initPhase_Param, minVal_Param, maxVal_Param, 0, 1, true);;
     resetPhase_Param = false;
 }
 
-void phasorClass::audioIn(int bufferSize){
+void phasorClass::audioIn(float * input, int bufferSize, int nChannels){
     if(loop_Param && !offlineMode_Param){
         //tue phasor that goes from 0 to 1 at desired frequency
         double freq = (double)bpm_Param/(double)60;
@@ -61,7 +60,7 @@ void phasorClass::audioIn(int bufferSize){
         //TODO: This is not working
         freq = (double)freq / (double)beatsDiv_Param;
         
-        double increment = (1.0f/(double)(((double)44100/(double)bufferSize)/(double)freq));
+        double increment = (1.0f/(double)(((double)44100/(double)512)/(double)freq));
         
         // We want to use half speed with bounce param,
         // becouse we will make a triangle wave and it
@@ -79,7 +78,7 @@ void phasorClass::audioIn(int bufferSize){
             phasorMod = 1-(fabs((phasor * (-2))+ 1));
         
         //take the initPhase_Param as a phase offset param
-        phasorMod += initPhase_Param;
+        phasorMod += ofMap(initPhase_Param, minVal_Param, maxVal_Param, 0, 1, true);
         if(phasorMod >= 1.0)
             phasorMod -= 1.0;
         
@@ -118,7 +117,7 @@ void phasorClass::nextFrame(){
             phasorMod = 1-(fabs((phasor * (-2))+ 1));
         
         //take the initPhase_Param as a phase offset param
-        phasorMod += initPhase_Param;
+        phasorMod += ofMap(initPhase_Param, minVal_Param, maxVal_Param, 0, 1, true);
         if(phasorMod >= 1.0)
             phasorMod -= 1.0;
         
@@ -134,13 +133,15 @@ void phasorClass::nextFrame(){
 
 void phasorClass::loopChanged(bool &val){
     if(!val){
-        phasorMod = initPhase_Param;
+        phasorMod = ofMap(initPhase_Param, minVal_Param, maxVal_Param, 0, 1, true);
+    }else{
+        phasor = 0;
     }
 }
 
 void phasorClass::initPhaseChanged(float &f){
     if(loop_Param == false){
-        phasorMod = initPhase_Param;
+        phasorMod = ofMap(initPhase_Param, minVal_Param, maxVal_Param, 0, 1, true);
     }
 
 }

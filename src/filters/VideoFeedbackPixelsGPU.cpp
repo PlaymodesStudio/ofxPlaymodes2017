@@ -23,7 +23,9 @@ static string fragmentFeedbackSrc =
         void main (void){
             vec2 pos = gl_FragCoord.xy;
 
-            vec4 color = vec4(max(texture2DRect(tex0, pos).r* opacityIn,texture2DRect(tex1, pos).r*(feedback)),max(texture2DRect(tex0, pos).g*opacityIn,texture2DRect(tex1, pos).g*(feedback)),max(texture2DRect(tex0, pos).b*opacityIn,texture2DRect(tex1, pos).b*(feedback)),1.0);
+            vec4 color = vec4(max(texture2DRect(tex0, pos).r*opacityIn,texture2DRect(tex1, pos).r*(feedback)),
+                              max(texture2DRect(tex0, pos).g*opacityIn,texture2DRect(tex1, pos).g*(feedback)),
+                              max(texture2DRect(tex0, pos).b*opacityIn,texture2DRect(tex1, pos).b*(feedback)),1.0);
 
             gl_FragColor = color;
         }

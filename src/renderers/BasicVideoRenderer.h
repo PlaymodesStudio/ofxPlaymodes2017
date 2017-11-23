@@ -27,13 +27,12 @@ public:
 
 	void draw();
 	void draw(int x,int y,int w,int h);
-
+    
 private:
 	VideoSource * source;
 	ofTexture	tex;
 	ofPBO		pbo;
 	bool		updateTex;
-	
     
 };
 }

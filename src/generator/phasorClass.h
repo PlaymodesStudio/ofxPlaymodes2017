@@ -23,7 +23,7 @@ public:
     float getPhasor();
     void resetPhasor(bool &reset);
     
-    void audioIn(int bufferSize);
+    void audioIn(float * input, int bufferSize, int nChannels);
     void loopChanged(bool &val);
     
     void nextFrame();

@@ -13,7 +13,6 @@ oscillatorBank::oscillatorBank(int nOscillators, bool gui, int _bankId, ofPoint 
     for(int i=0 ; i < nOscillators ; i++){
         oscillators.push_back(new baseOscillator(i));
         oscillators[i]->setIndexNormalized(indexs[i]);
-        ofAddListener(oscillators[i]->resultGenerated, this, &oscillatorBank::oscillatorResult);
     }
     result.resize(nOscillators, 0);
     resultFilledChecker.resize(nOscillators, 0);
@@ -24,16 +23,20 @@ oscillatorBank::oscillatorBank(int nOscillators, bool gui, int _bankId, ofPoint 
     parameters->add(randomAdd_Param.set("Random Addition", 0, -.5, .5));
     parameters->add(scale_Param.set("Scale", 1, 0, 2));
     parameters->add(offset_Param.set("Offset", 0, -1, 1));
-    parameters->add(pow_Param.set("Pow", 1, -40, 40));
+    parameters->add(pow_Param.set("Pow", 0, -40, 40));
+    parameters->add(biPow_Param.set("Bi Pow", 0, -40, 40));
     parameters->add(quant_Param.set("Quantization", 255, 1, 255));
+    parameters->add(pulseWidth_Param.set("Pulse Width", 1, 0, 1));
+    parameters->add(skew_Param.set("Skew", 0, -1, 1));
     parameters->add(amplitude_Param.set("Fader", 1, 0, 1));
+    parameters->add(invert_Param.set("Invert", 0, 0, 1));
     ofParameterGroup waveDropDown;
     waveDropDown.setName("Wave Select");
     ofParameter<string> tempStrParam("Options", "sin-|-cos-|-tri-|-square-|-saw-|-inverted saw-|-rand1-|-rand2");
     waveDropDown.add(tempStrParam);
     waveDropDown.add(waveSelect_Param.set("Wave Select", 0, 0, 7));
     parameters->add(waveDropDown);
-    parameters->add(pwm_Param.set("Square PWM", 0.5, 0, 1));
+    
     parameters->add(oscillatorOut.set("Oscillator Out", {0}));
     
     if(gui)
@@ -48,8 +51,38 @@ oscillatorBank::oscillatorBank(int nOscillators, bool gui, int _bankId, ofPoint 
     pow_Param.addListener(this, &oscillatorBank::newPowParam);
     quant_Param.addListener(this, &oscillatorBank::newQuantParam);
     amplitude_Param.addListener(this, &oscillatorBank::newAmplitudeParam);
+    invert_Param.addListener(this, &oscillatorBank::newInvertParam);
+    biPow_Param.addListener(this, &oscillatorBank::newBiPowParam);
     waveSelect_Param.addListener(this, &oscillatorBank::newWaveSelectParam);
-    pwm_Param.addListener(this, &oscillatorBank::newPwmParam);
+    pulseWidth_Param.addListener(this, &oscillatorBank::newpulseWidthParam);
+    skew_Param.addListener(this, &oscillatorBank::newSkewParam);
+}
+
+vector<float> oscillatorBank::computeBank(float phasor){
+    for(int i = 0; i < oscillators.size(); i++){
+        result[i] = oscillators[i]->computeFunc(phasor);
+    }
+    if(waveSelect_Param == 6 || waveSelect_Param == 7){
+        auto resultCopy = result;
+        for(int i = 0 ; i < result.size() ; i++){
+            int new_i = (floor(((float)i/((float)result.size())*(float)indexQuant_Param)) * floor(((float)result.size())/(float)indexQuant_Param));
+            result[i] = resultCopy[new_i];
+        }
+    }
+    //Reindex
+    if(!isReindexIdentity){
+        ofLog() << "ComputingReindex" << ofGetTimestampString();
+        vector<float>   resultNoReindex = result;
+        result = vector<float>(resultNoReindex.size(), 0);
+        for(int i = 0; i < result.size(); i++){
+            for(int j = 0; j < result.size(); j++){
+                if(reindexGrid.get()[j][i]){
+                    if(resultNoReindex[j] > result[i]) result[i] = resultNoReindex[j];
+                }
+            }
+        }
+    }
+    return result;
 }
 
 void oscillatorBank::newIndexs(){
@@ -58,39 +91,20 @@ void oscillatorBank::newIndexs(){
     }
 }
 
-void oscillatorBank::oscillatorResult(pair<int, float> &oscInfo){
-    result[oscInfo.first] = oscInfo.second;
-    resultFilledChecker[oscInfo.first] = 1;
-    
-    if(resultFilledChecker.size() == accumulate(resultFilledChecker.begin(), resultFilledChecker.end(), 0)){
-        if(waveSelect_Param == 6 || waveSelect_Param == 7){
-            auto resultCopy = result;
-            for(int i = 0 ; i<result.size() ; i++){
-                int new_i = floor(i/((float)result.size()/(float)indexQuant_Param));
-                result[i] = resultCopy[new_i];
-            }
-        }
-        parameters->get("Oscillator Out").cast<vector<float>>() = result;
-        fill(resultFilledChecker.begin(), resultFilledChecker.end(), 0);
-        ofNotifyEvent(eventInGroup, bankId, this);
-    }
-}
-
 void oscillatorBank::newPhasorIn(float &f){
+    computeBank(f);
+    parameters->get("Oscillator Out").cast<vector<float>>() = result;
+}
+
+void oscillatorBank::newPowParam(float &f){
     for(auto &oscillator : oscillators){
-        oscillator->phasorIn = f;
+        oscillator->pow_Param = f;
     }
 }
 
-void oscillatorBank::newPowParam(int &i){
+void oscillatorBank::newpulseWidthParam(float &f){
     for(auto &oscillator : oscillators){
-        oscillator->pow_Param = i;
-    }
-}
-
-void oscillatorBank::newPwmParam(float &f){
-    for(auto &oscillator : oscillators){
-        oscillator->pwm_Param = f;
+        oscillator->pulseWidth_Param = f;
     }
 }
 
@@ -139,5 +153,23 @@ void oscillatorBank::newWaveSelectParam(int &i){
 void oscillatorBank::newAmplitudeParam(float &f){
     for(auto &oscillator : oscillators){
         oscillator->amplitude_Param = f;
+    }
+}
+
+void oscillatorBank::newInvertParam(float &f){
+    for(auto &oscillator : oscillators){
+        oscillator->invert_Param = f;
+    }
+}
+
+void oscillatorBank::newSkewParam(float &f){
+    for(auto &oscillator : oscillators){
+        oscillator->skew_Param = f;
+    }
+}
+
+void oscillatorBank::newBiPowParam(float &f){
+    for(auto &oscillator : oscillators){
+        oscillator->biPow_Param = f;
     }
 }

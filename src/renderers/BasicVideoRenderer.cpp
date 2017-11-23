@@ -42,20 +42,20 @@ void BasicVideoRenderer::draw(){
 }
 	
 void BasicVideoRenderer::draw(int x,int y,int w,int h){
-	VideoFrame frame = source->getNextVideoFrame();
+	VideoFrame lastFrame = source->getNextVideoFrame();
 	// in case the texture is allocated (ex. dryWet is sending the fbo)
 	// we just draw the texture
-	if(frame!=nullptr)
+	if(lastFrame!=nullptr)
     {
-        if(frame.getTextureRef().isAllocated())
+        if(lastFrame.getTextureRef().isAllocated())
         {
-            frame.getTextureRef().draw(x,y,w,h);
+            lastFrame.getTextureRef().draw(x,y,w,h);
         }
         // in case the new VideoFrame comes as pixels ...
         // convert the pixels to texture trough the pbo and draw it !
-        else if (frame.getPixelsRef().isAllocated())
+        else if (lastFrame.getPixelsRef().isAllocated())
         {
-            pbo.loadData(frame.getPixelsRef());
+            pbo.loadData(lastFrame.getPixelsRef());
             pbo.updateTexture();
             tex.draw(x,y,w,h);
         }        
@@ -63,5 +63,6 @@ void BasicVideoRenderer::draw(int x,int y,int w,int h){
 }
 	
 
-	
-}
+    }
+
+
