@@ -66,7 +66,8 @@ void parametersControl::createGuiFromParams(ofParameterGroup *paramGroup, ofColo
             if(ofSplitString(absParam.getName(), "_").size() > 1){
                 if(ofSplitString(absParam.getName(), "_")[1] == "label"){
                     ofxDatGuiLabel* l = tempDatGui->addLabel(ofSplitString(absParam.getName(), "_")[0]);
-                    l->setStripe(ofColor(255), 10);
+                    l->setStripe(ofColor(255,128,0), 4);
+                    l->setStripeVisible(true);
                 }else if(ofSplitString(absParam.getName(), "_")[1] == "paragraph"){
                     tempDatGui->addParagraph(ofSplitString(absParam.getName(), "_")[0], absParam.cast<string>());
                 }

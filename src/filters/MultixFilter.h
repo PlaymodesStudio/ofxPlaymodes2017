@@ -28,7 +28,7 @@ public:
 
     void    updateValuesPct(vector<float> _vf);
     void    updateValuesMs(vector<float> _vf);
-    void    draw(int x, int y,int w, int h);
+    void    drawIntoFbo(int x, int y,int w, int h);
 
     void    setNumHeaders(int numHeaders);
     int     getNumHeaders();

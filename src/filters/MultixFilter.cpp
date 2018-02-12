@@ -172,7 +172,7 @@ void MultixFilter::newVideoFrame(VideoFrame & _frame)
         //ofDrawRectangle(0,0,fbo.getWidth()-ofGetMouseX(),fbo.getHeight());
         //_frame.getTextureRef().draw(0,0,fbo.getWidth(),fbo.getHeight());
         //videoRenderer[1].draw(ofGetMouseX(),ofGetMouseY(),fbo.getWidth(),fbo.getHeight());
-        draw(0,0,fbo.getWidth(),fbo.getHeight());
+        drawIntoFbo(0,0,fbo.getWidth(),fbo.getHeight());
         
     }
     fbo.end();
@@ -184,10 +184,10 @@ void MultixFilter::newVideoFrame(VideoFrame & _frame)
 }
 
 //--------------------------------------------------------
-void MultixFilter::draw(int x, int y,int w, int h)
+void MultixFilter::drawIntoFbo(int x, int y,int w, int h)
 {
-    
-    ofEnableAlphaBlending();
+    // TO DO : needed ?
+    //ofEnableAlphaBlending();
 
     if(minmaxBlend){
         glBlendEquationEXT(GL_MAX);
@@ -210,20 +210,24 @@ void MultixFilter::draw(int x, int y,int w, int h)
                 opac = 1.0;
                 break;
             case 1 :
-                opac = (1.0/videoHeader.size()) * (videoHeader.size()-i-1);
+                opac = (1.0/videoHeader.size()) * (videoHeader.size()-i);
                 break;
             case 2 :
                 opac = 1.0-(1.0/videoHeader.size()) * (videoHeader.size()-i-1);
                 break;
 
         }
+        //cout << "MultixFilter :: i : " << i << " Opac[0..1] : " << opac << endl;
+
         if((videoHeader[i].getDelayMs()>=0)&&(videoHeader[i].getDelayMs() < totalBufferSizeInMs))
         {
             headersInAction++;
-            ofSetColor((opac*255.0));
+            ofSetColor((opac*255.0),255);
+            // or the opposite order size-i-1 ? or just "i"
             videoRenderer[i].draw(x,y,w,h);
         }
 	}
+    //cout << "MultixFilter :: Headers in Action : " << headersInAction << endl;
     ofDisableAlphaBlending();
 
     
@@ -241,6 +245,9 @@ void MultixFilter::draw(int x, int y,int w, int h)
 //    float totalLengthInMs = videoBuffer->getMaxSize() * oneFrameMs;
 //    int maxHeight = 100 * (totalLengthInMs/1000.0);
 //    ofDrawLine(0,500 + maxHeight , 640, 500 + maxHeight);
+    
+    // TO DO : needed ?
+    glBlendEquationEXT(GL_ADD);
 }
 
 

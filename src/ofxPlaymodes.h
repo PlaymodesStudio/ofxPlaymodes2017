@@ -24,6 +24,7 @@
 
 #include "MultixFilter.h"
 #include "VideoTestShaderFX.h"
+#include "GradientEdgesFilter.h"
 
 #include "AudioSample.h"
 #include "AudioBufferSamples.h"
