@@ -8,6 +8,7 @@
 
 #include "parametersControl.h"
 #include <random>
+#include "ofxPlaymodes.h"
 
 
 parametersControl::~parametersControl(){
@@ -1523,7 +1524,7 @@ void parametersControl::listenerFunction(ofAbstractParameter& e){
     vector<shared_ptr<nodeConnection>> validConnections;
     
     if(e.getName() == "Phasor Monitor"){
-        //return;
+        return;
     }
     
     auto parent = e.getGroupHierarchyNames()[0];
@@ -1713,6 +1714,9 @@ void parametersControl::setFromSameTypeValue(shared_ptr<nodeConnection> connecti
                         pos2.setHue(ofMap(pos2.getHue(), 0, 1, connection->getMin(), connection->getMax()));
                 }
                 sink->cast<vector<vector<ofColor>>>() = tempVec;
+            }
+            else if(source->type() == typeid(ofParameter<ofxPm::VideoFrame>).name()){
+                sink->cast<ofxPm::VideoFrame>() = source->cast<ofxPm::VideoFrame>();
             }
         }else{
             for(auto &connection : connections){

@@ -73,7 +73,7 @@ void VideoRate::threadedFunction(){
 	while(isThreadRunning())
     {
 		unsigned long long time = ofGetElapsedTimeMicros();
-		if(back!=NULL){
+		if(!back.isNull()){
 			mutexFront.lock();
 			framesToSend.push(back);
 			mutexFront.unlock();
@@ -91,7 +91,7 @@ void VideoRate::glThreadUpdate(ofEventArgs & args){
 	int framesToSend = dFrames;
 	remainder = dFrames-framesToSend;
 
-	if(back!=NULL){
+	if(!back.isNull()){
 		for(int i=0;i<framesToSend;i++){
 			VideoFrame newFrame = VideoFrame::newVideoFrame(back);
 			ofNotifyEvent(newFrameEvent,newFrame);

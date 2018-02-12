@@ -22,8 +22,8 @@ public:
     VideoFrame getNextVideoFrame();
 	void newVideoFrame(VideoFrame & frame);
     float getFps(){return source->getFps();};
-    void setLumaThreshold(float f){lumaThreshold=f;};
-    void setLumaSmooth(float f){lumaSmooth=f;};
+    void setLumaThreshold(float &f){lumaThreshold=f;};
+    void setLumaSmooth(float &f){lumaSmooth=f;};
 
 private:
 	VideoFrame      frame;
@@ -37,6 +37,14 @@ private:
     float lumaThreshold;
     float lumaSmooth;
     float fps;
+    
+    // FEATURE NODE
+    ofParameterGroup*                   parameters;
+    ofParameter<float>                  paramLumaThrshold;
+    ofParameter<float>                  paramLumaSmooth;
+    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
+    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
+
 };
 }
 

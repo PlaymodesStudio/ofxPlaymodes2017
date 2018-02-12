@@ -29,10 +29,10 @@ public:
 	
     void update();
 
-    void setAutoWhiteBalance(bool _b){eye->setAutoWhiteBalance(_b);};
-    void setAutoGain(bool _b){eye->setAutogain(_b);};
-    void setExposure(int _i){eye->setExposure(_i);};
-    void setHue(int _i){eye->setHue((uint8_t)_i);};
+    void setAutoWhiteBalance(bool &_b){eye->setAutoWhiteBalance(_b);};
+    void setAutoGain(bool &_b){eye->setAutogain(_b);};
+    void setExposure(int &_i){eye->setExposure(_i);};
+    void setHue(int &_i){eye->setHue((uint8_t)_i);};
 
 private:
     void newFrame(ofPixels & frame);
@@ -43,7 +43,15 @@ private:
     unsigned char * videoFrame;
     ofTexture videoTexture;
 
-
+    // FEATURE NODES
+    ofParameterGroup*                   parameters;
+    ofParameter<ofxPm::VideoFrame>      frameOut;
+    ofParameter<int>                    paramExposure;
+    ofParameter<int>                    paramHue;
+    ofParameter<bool>                   paramAutoGain;
+    ofParameter<bool>                   paramAutoWB;
+    
+    
 };
 }
 

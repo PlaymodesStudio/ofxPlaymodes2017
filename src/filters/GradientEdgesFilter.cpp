@@ -6,6 +6,8 @@
  */
 
 #include "GradientEdgesFilter.h"
+#include "parametersControl.h"
+
 
 namespace ofxPm{
 GradientEdgesFilter::GradientEdgesFilter()
@@ -22,8 +24,6 @@ GradientEdgesFilter::~GradientEdgesFilter() {
 
 void GradientEdgesFilter::setup(VideoSource & _source){
 
-    gradientWidth = 0.25;
-    gradientXorY = 1.0;
     
     source = &_source;
     fps = _source.getFps();
@@ -45,9 +45,32 @@ void GradientEdgesFilter::setup(VideoSource & _source){
 //    plane.mapTexCoords(0, 0,source->getWidth(),source->getHeight());
     
     cout <<"FX Source W : "  << source->getWidth() << " H : " << source->getHeight() << endl;
+    
+    // param nodes
+    
+    ofParameter<float>                  paramLumaThrshold;
+    ofParameter<float>                  paramLumaSmooth;
+    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
+    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
+    
+    
+    parameters = new ofParameterGroup();
+    parameters->setName("Gradient Edges");
+    parameters->add(paramGradientWidth.set("Width",0.25,0.0,1.0));
+    parameters->add(paramGradientXorY.set("X or Y",1,0,1));
+    parameters->add(paramFrameOut.set("Frame Output", frame));
+    parameters->add(paramFrameIn.set("Frame In", frame));
+    
+    parametersControl::getInstance().createGuiFromParams(parameters,ofColor::yellow);
+    
+    paramGradientWidth.addListener(this, &GradientEdgesFilter::setGradientWidth);
+    paramGradientXorY.addListener(this, &GradientEdgesFilter::setGradientXorY);
+    
+    paramFrameIn.addListener(this, &GradientEdgesFilter::newVideoFrame);
 }
 
-VideoFrame GradientEdgesFilter::getNextVideoFrame(){
+VideoFrame GradientEdgesFilter::getNextVideoFrame()
+{
     
 //    if(source->getNextVideoFrame()!=NULL)
 //    {
@@ -75,8 +98,8 @@ void GradientEdgesFilter::newVideoFrame(VideoFrame & _frame){
         shader.begin();
         {
             shader.setUniformTexture("tex0",_frame.getTextureRef(),0);
-            shader.setUniform1f("u_width",gradientWidth);
-            shader.setUniform1i("u_xory",gradientXorY);
+            shader.setUniform1f("u_width",paramGradientWidth);
+            shader.setUniform1i("u_xory",paramGradientXorY);
             
             ofSetColor(255);
         //    frame.getTextureRef().bind();
@@ -94,6 +117,8 @@ void GradientEdgesFilter::newVideoFrame(VideoFrame & _frame){
 	ofNotifyEvent(newFrameEvent,frame);
     
 //    front = frame;
+    
+    parameters->get("Frame Output").cast<ofxPm::VideoFrame>() = frame;
     
 }
 

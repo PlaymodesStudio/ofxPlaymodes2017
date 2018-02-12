@@ -49,8 +49,10 @@ void MultixFilter::setup(VideoBuffer & _buffer, int _numHeaders){
     
     
     // get initial video frame
-    if(videoBuffer->getNextVideoFrame()!=NULL)
+    VideoFrame v = videoBuffer->getNextVideoFrame();
+    if(!v.isNull())
     {
+        cout << "Multix..." << endl;
         frame = VideoFrame::newVideoFrame(videoBuffer->getNextVideoFrame());
     }
     ofAddListener(videoBuffer->newFrameEvent,this,&MultixFilter::newVideoFrame);

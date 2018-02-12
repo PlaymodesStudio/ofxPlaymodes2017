@@ -7,6 +7,9 @@
 
 #include "VideoTestShaderFX.h"
 
+#include "parametersControl.h"
+
+
 //#define STRINGIFY(...) #__VA_ARGS__
 //static string fragmentTestSrc =
 //#ifdef TARGET_LINUX
@@ -67,6 +70,28 @@ void VideoTestShaderFX::setup(VideoSource & _source){
 //    plane.mapTexCoords(0, 0,source->getWidth(),source->getHeight());
     
     cout <<"FX Source W : "  << source->getWidth() << " H : " << source->getHeight() << endl;
+    
+    // param nodes
+    
+    ofParameter<float>                  paramLumaThrshold;
+    ofParameter<float>                  paramLumaSmooth;
+    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
+    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
+
+    
+    parameters = new ofParameterGroup();
+    parameters->setName("Luma Key");
+    parameters->add(paramLumaThrshold.set("Threshold",0.25,0.0,1.0));
+    parameters->add(paramLumaSmooth.set("Smooth",0.25,0.0,1.0));
+    parameters->add(paramFrameOut.set("Frame Output", frame));
+    parameters->add(paramFrameIn.set("Frame In", frame));
+    
+    parametersControl::getInstance().createGuiFromParams(parameters,ofColor::yellow);
+    
+    paramLumaThrshold.addListener(this, &VideoTestShaderFX::setLumaThreshold);
+    paramLumaSmooth.addListener(this, &VideoTestShaderFX::setLumaSmooth);
+    
+    paramFrameIn.addListener(this, &VideoTestShaderFX::newVideoFrame);
 }
 
 VideoFrame VideoTestShaderFX::getNextVideoFrame(){
@@ -79,7 +104,15 @@ VideoFrame VideoTestShaderFX::getNextVideoFrame(){
     return frame;
 
 }
-
+//    void VideoGrabberPS3Eye::newFrame(ofPixels & pixels){
+//        frame = VideoFrame::newVideoFrame(pixels);
+//        //frame.getTextureRef();
+//        newFrameEvent.notify(this,frame);
+//        //    frameOut = frame;
+//        
+//        parameters->get("Frame Output").cast<ofxPm::VideoFrame>() = frame;
+//    }
+//    
 void VideoTestShaderFX::newVideoFrame(VideoFrame & _frame){
 //	//front = VideoFrame::newVideoFrame(frame);
 //
@@ -116,7 +149,9 @@ void VideoTestShaderFX::newVideoFrame(VideoFrame & _frame){
 	ofNotifyEvent(newFrameEvent,frame);
     
 //    front = frame;
-    
+  
+    parameters->get("Frame Output").cast<ofxPm::VideoFrame>() = frame;
+
 }
 
 }

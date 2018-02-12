@@ -227,9 +227,9 @@ public:
 		return total_num_frames;
 	}
 
-	VideoFrame::operator void*(){
-		return data.get();
-	}
+//	VideoFrame::operator void*(){
+//		return data.get();
+//	}
 
 	void VideoFrame::setTextureOnly(bool texOnly){
 		data->createdTexPixels=!texOnly;

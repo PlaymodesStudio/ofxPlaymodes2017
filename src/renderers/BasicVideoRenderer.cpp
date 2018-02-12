@@ -45,7 +45,7 @@ void BasicVideoRenderer::draw(int x,int y,int w,int h){
 	VideoFrame lastFrame = source->getNextVideoFrame();
 	// in case the texture is allocated (ex. dryWet is sending the fbo)
 	// we just draw the texture
-	if(lastFrame!=nullptr)
+	if(!lastFrame.isNull())
     {
         if(lastFrame.getTextureRef().isAllocated())
         {

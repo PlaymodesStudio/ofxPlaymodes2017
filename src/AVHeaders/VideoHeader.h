@@ -60,10 +60,16 @@ protected:
     //---------- TS HEADER CONTROL VARS
 
     Timestamp		nowTS;
-    double           delayInMs;
+    double          delayInMs;
     Timestamp       inTS, outTS;
     Timestamp       currentFrameTs;
     int             currentFrameIndex;
+    
+    // PARAMETERS FEATURE NODE
+    ofParameterGroup*   parameters;
+    ofParameter<float>  paramDelayMs;
+
+    
 
 };
 }

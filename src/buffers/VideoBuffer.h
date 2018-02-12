@@ -33,6 +33,7 @@ public:
 	virtual ~VideoBuffer();
 
 	void setup(VideoSource & source, int size, bool allocateOnSetup=false);
+    void setupNodeBased(int size, bool allocateOnSetup=false);
 
     // of working in threaded mode,
     // call buffer->lock() buffer->unlock()
@@ -54,6 +55,9 @@ public:
 
 
 	virtual void newVideoFrame(VideoFrame &frame);  // for notification of new frame event
+    void newVideoFrame2(VideoFrame* &frame){
+        newVideoFrame(*frame);
+    }
 
 	unsigned int size();                            // total size of the buffer
 	unsigned int getMaxSize();                         // max size of the buffer
@@ -75,6 +79,7 @@ public:
     bool isStopped();
 
     void clear();
+    
 
 protected:
     deque<VideoFrame> frames;
@@ -89,6 +94,11 @@ protected:
     int framesOneSec;
     int64_t microsOneSec;
     double realFps;
+    
+    // FEATURE NODE
+    ofParameterGroup*                   parameters;
+    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
+//    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
 };
 }
 #endif /* VIDEOBUFFER_H_ */

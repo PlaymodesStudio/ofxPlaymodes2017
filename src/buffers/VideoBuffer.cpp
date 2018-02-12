@@ -7,6 +7,7 @@
 
 #include "VideoBuffer.h"
 #include "VideoHeader.h"
+#include "parametersControl.h"
 
 namespace ofxPm
 {
@@ -48,8 +49,57 @@ void VideoBuffer::setup(VideoSource & _source, int size, bool allocateOnSetup)
 		}
 		printf("//\n");
 	}
-	resume();
+	
 	microsOneSec=-1;
+        
+        // parametersGroup
+        parameters = new ofParameterGroup();
+        parameters->setName("Video Buffer");
+        ofxPm::VideoFrame vf;
+        parameters->add(paramFrameIn.set("Frame Input",vf));
+        //    parameters->add(paramFrameIn.set("Frame Output",vf));
+        
+        parametersControl::getInstance().createGuiFromParams(parameters,ofColor::red);
+        
+    // do this the last to avoid sending nullptr frame
+    resume();
+}
+
+void VideoBuffer::setupNodeBased(int size, bool allocateOnSetup)
+{
+    source=NULL;
+    totalFrames=0;
+    maxSize = size;
+    
+    VideoSource::width = -1;
+    VideoSource::height = -1;
+    
+    if(allocateOnSetup && VideoSource::width!=-1)
+    {
+        printf("VideoBuffer:: allocating on setup %d %d : ",VideoSource::getWidth(),VideoSource::getHeight());
+        for(int i=0;i<size;i++){
+            VideoFrame videoFrame = VideoFrame::newVideoFrame(source->getNextVideoFrame().getPixelsRef());
+            //videoFrame.getTextureRef();
+            newVideoFrame(videoFrame);
+            printf("%d-",i);
+        }
+        printf("//\n");
+    }
+    else cout << "Video Buffer in 'node based' was not allocated on setup." << endl;
+    
+    microsOneSec=-1;
+    
+    // parametersGroup
+    parameters = new ofParameterGroup();
+    parameters->setName("Video Buffer");
+    ofxPm::VideoFrame vf;
+    parameters->add(paramFrameIn.set("Frame Input",vf));
+    //    parameters->add(paramFrameIn.set("Frame Output",vf));
+    
+    parametersControl::getInstance().createGuiFromParams(parameters,ofColor::red);
+    
+    // do this the last to avoid sending nullptr frame
+    resume();
 }
 
 VideoBuffer::~VideoBuffer() {
@@ -271,11 +321,16 @@ void VideoBuffer::stop()
     
     stopTime = initTime.elapsed();
     
+    paramFrameIn.removeListener(this,&VideoBuffer::newVideoFrame);
+
     cout << "Buffer: Stop! : " << endl;
 }
 
 void VideoBuffer::resume(){
-	ofAddListener(source->newFrameEvent,this,&VideoBuffer::newVideoFrame);
+	//ofAddListener(source->newFrameEvent,this,&VideoBuffer::newVideoFrame);
+    
+    paramFrameIn.addListener(this, &VideoBuffer::newVideoFrame);
+    
     stopped = false;
     
     initTime.update();

@@ -49,7 +49,7 @@ void VideoRenderer::draw(int x,int y,int w,int h)
 void VideoRenderer::drawNextFrame(int x,int y,int w,int h)
 {
     lastFrame = source->getNextVideoFrame();
-    if(lastFrame!=NULL){
+    if(!lastFrame.isNull()){
         lastFrame.getTextureRef().draw(x,y,w,h);
     }
     
@@ -58,7 +58,7 @@ void VideoRenderer::drawNextFrame(int x,int y,int w,int h)
 //--------------------------------------------------------------
 ofTexture VideoRenderer::getLastFrameTexture()
 {
-    if(lastFrame!=NULL)
+    if(!lastFrame.isNull())
     {
         if(lastFrame.getTextureRef().isAllocated())
         {

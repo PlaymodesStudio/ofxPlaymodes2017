@@ -86,7 +86,7 @@ VideoFrame VideoDryWetPixelsGPU::getNextVideoFrame(){
 void VideoDryWetPixelsGPU::newVideoFrame(VideoFrame & frame){
 	//front = VideoFrame::newVideoFrame(frame);
 
-	if(source2->getNextVideoFrame()==NULL){
+	if(source2->getNextVideoFrame().isNull()){
 		ofNotifyEvent(newFrameEvent,front);
 		return;
 	}

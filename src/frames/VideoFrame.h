@@ -38,7 +38,7 @@ public:
 	int getWidth();
 	int getHeight();
 
-	operator void*();
+//	operator void*();
 
 	void setTextureOnly(bool texOnly);
 
@@ -48,6 +48,10 @@ public:
     int         getBufferIndex(){return bufferIndex;};
     void        setBufferIndex(int i){bufferIndex=i;};
 
+    bool isNull()
+    {
+        return (data.get() == NULL);
+    }
 private:
     
     

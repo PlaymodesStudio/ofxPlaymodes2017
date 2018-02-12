@@ -88,7 +88,7 @@ VideoFrame VideoFeedbackPixelsGPU::getNextVideoFrame(){
 
 void VideoFeedbackPixelsGPU::newVideoFrame(VideoFrame & frame){
 
-	if(source2->getNextVideoFrame()==NULL){
+	if(source2->getNextVideoFrame().isNull()){
 		ofNotifyEvent(newFrameEvent,front);
 		return;
 	}

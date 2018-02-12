@@ -6,6 +6,7 @@
  */
 
 #include "VideoGrabberPS3Eye.h"
+#include "parametersControl.h"
 
 namespace ofxPm{
 VideoGrabberPS3Eye::VideoGrabberPS3Eye(){
@@ -15,6 +16,24 @@ VideoGrabberPS3Eye::~VideoGrabberPS3Eye(){
 }
 
 bool VideoGrabberPS3Eye::initGrabber(int w, int h){
+    
+    // parametersGroup
+    
+    parameters = new ofParameterGroup();
+    parameters->setName("VideoGrabberPS3Eye");
+    parameters->add(paramExposure.set("Exposure",1,0,255));
+    parameters->add(paramHue.set("Hue",0,0,255));
+    parameters->add(paramAutoGain.set("AutoGrain",false));
+    parameters->add(paramAutoWB.set("AutoWB",false));
+    parameters->add(frameOut.set("Frame Output", frame));
+    
+    parametersControl::getInstance().createGuiFromParams(parameters,ofColor::orange);
+    
+    paramExposure.addListener(this, &VideoGrabberPS3Eye::setExposure);
+    paramAutoGain.addListener(this, &VideoGrabberPS3Eye::setAutoGain);
+    paramHue.addListener(this, &VideoGrabberPS3Eye::setHue);
+    paramAutoWB.addListener(this,&VideoGrabberPS3Eye::setAutoWhiteBalance);
+    
     // list out the devices
     std::vector<ps3eye::PS3EYECam::PS3EYERef> devices( ps3eye::PS3EYECam::getDevices() );
     cout << "Devices List : " << devices.size() << endl;
@@ -64,6 +83,9 @@ void VideoGrabberPS3Eye::newFrame(ofPixels & pixels){
 	frame = VideoFrame::newVideoFrame(pixels);
 	//frame.getTextureRef();
 	newFrameEvent.notify(this,frame);
+//    frameOut = frame;
+    
+    parameters->get("Frame Output").cast<ofxPm::VideoFrame>() = frame;
 }
 
 //------------------------------------------------------

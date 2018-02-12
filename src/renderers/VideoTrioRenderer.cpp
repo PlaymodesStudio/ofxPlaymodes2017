@@ -52,7 +52,7 @@ void VideoTrioRenderer::drawNextFrame(int x,int y,int w,int h)
 
     VideoFrame frame = source->getNextVideoFrame();
     
-    if(frame!=NULL)
+    if(!frame.isNull())
     {
         ofVec2f frameResolution = ofVec2f(frame.getWidth(),frame.getHeight());
         float frameAspectRatio = frameResolution.x / frameResolution.y;

@@ -22,7 +22,8 @@ public:
     VideoFrame getNextVideoFrame();
 	void newVideoFrame(VideoFrame & frame);
     float getFps(){return source->getFps();};
-    void setGradientWidth(float f){gradientWidth=f;};
+    void setGradientWidth(float &_f){paramGradientWidth=_f;};
+    void setGradientXorY(int &_i){paramGradientXorY=_i;};
 
 private:
 	VideoFrame      frame;
@@ -33,9 +34,17 @@ private:
     ofPlanePrimitive plane;
 	//ofMutex swapBuffersMutex;
 
-    float gradientWidth;
-    int gradientXorY;
     float fps;
+    
+    //    float gradientWidth;
+    //    int gradientXorY;
+    // FEATURE NODE
+    ofParameterGroup*                   parameters;
+    ofParameter<float>                  paramGradientWidth;
+    ofParameter<int>                    paramGradientXorY;
+    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
+    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
+
 };
 }
 

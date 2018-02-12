@@ -61,7 +61,7 @@ VideoFrame VideoMixerGPU::getNextVideoFrame(){
 void VideoMixerGPU::newVideoFrame(VideoFrame & frame){
 	//front = VideoFrame::newVideoFrame(frame);
 
-	if(source2->getNextVideoFrame()==NULL){
+	if(source2->getNextVideoFrame().isNull()){
 		ofNotifyEvent(newFrameEvent,front);
 		return;
 	}
