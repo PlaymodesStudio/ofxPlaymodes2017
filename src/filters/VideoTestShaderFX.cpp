@@ -166,12 +166,12 @@ void VideoTestShaderFX::newVideoFrame(VideoFrame & _frame){
 
 	frame = VideoFrame::newVideoFrame(fbo);
 //
-	ofNotifyEvent(newFrameEvent,frame);
+	
     
 //    front = frame;
   
-    parameters->get("Frame Output").cast<ofxPm::VideoFrame>() = frame;
-
+    if(isNodeBased) parameters->get("Frame Output").cast<ofxPm::VideoFrame>() = frame;
+    else ofNotifyEvent(newFrameEvent,frame);
 }
 
 }
