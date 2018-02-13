@@ -18,7 +18,8 @@ public:
 	virtual ~GradientEdgesFilter();
 
 	void setup(VideoSource & source1);
-
+    void setupNodeBased();
+    
     VideoFrame getNextVideoFrame();
 	void newVideoFrame(VideoFrame & frame);
     float getFps(){return source->getFps();};
@@ -42,8 +43,9 @@ private:
     ofParameterGroup*                   parameters;
     ofParameter<float>                  paramGradientWidth;
     ofParameter<int>                    paramGradientXorY;
-    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
-    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
+//    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
+//    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
+    bool                                isNodeBased;
 
 };
 }

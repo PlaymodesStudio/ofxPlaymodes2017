@@ -99,6 +99,8 @@ protected:
     ofParameterGroup*                   parameters;
     ofParameter<ofxPm::VideoFrame>      paramFrameIn;
 //    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
+    bool                                isNodeBased;
+    
 };
 }
 #endif /* VIDEOBUFFER_H_ */

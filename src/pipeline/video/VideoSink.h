@@ -18,6 +18,9 @@ public:
 	virtual ~VideoSink();
 
 	virtual void newVideoFrame(VideoFrame & frame){};
+    
+    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
+
 };
 }
 

@@ -18,7 +18,8 @@ public:
 	virtual ~VideoTestShaderFX();
 
 	void setup(VideoSource & source1);
-
+    void setupNodeBased();
+    
     VideoFrame getNextVideoFrame();
 	void newVideoFrame(VideoFrame & frame);
     float getFps(){return source->getFps();};
@@ -42,8 +43,9 @@ private:
     ofParameterGroup*                   parameters;
     ofParameter<float>                  paramLumaThrshold;
     ofParameter<float>                  paramLumaSmooth;
-    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
-    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
+    bool                                isNodeBased;
+//    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
+//    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
 
 };
 }

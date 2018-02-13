@@ -45,7 +45,7 @@ private:
 
     // FEATURE NODES
     ofParameterGroup*                   parameters;
-    ofParameter<ofxPm::VideoFrame>      frameOut;
+//    ofParameter<ofxPm::VideoFrame>      frameOut;
     ofParameter<int>                    paramExposure;
     ofParameter<int>                    paramHue;
     ofParameter<bool>                   paramAutoGain;

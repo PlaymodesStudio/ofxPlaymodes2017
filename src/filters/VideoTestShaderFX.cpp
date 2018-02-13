@@ -52,6 +52,7 @@ void VideoTestShaderFX::setup(VideoSource & _source){
     lumaThreshold=0.025;
     source = &_source;
     fps = _source.getFps();
+    isNodeBased = false;
     
 	frame = VideoFrame::newVideoFrame(source->getNextVideoFrame());
 	ofAddListener(source->newFrameEvent,this,&VideoTestShaderFX::newVideoFrame);
@@ -71,29 +72,46 @@ void VideoTestShaderFX::setup(VideoSource & _source){
     
     cout <<"FX Source W : "  << source->getWidth() << " H : " << source->getHeight() << endl;
     
-    // param nodes
-    
-    ofParameter<float>                  paramLumaThrshold;
-    ofParameter<float>                  paramLumaSmooth;
-    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
-    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
 
-    
-    parameters = new ofParameterGroup();
-    parameters->setName("Luma Key");
-    parameters->add(paramLumaThrshold.set("Threshold",0.25,0.0,1.0));
-    parameters->add(paramLumaSmooth.set("Smooth",0.25,0.0,1.0));
-    parameters->add(paramFrameOut.set("Frame Output", frame));
-    parameters->add(paramFrameIn.set("Frame In", frame));
-    
-    parametersControl::getInstance().createGuiFromParams(parameters,ofColor::yellow);
-    
-    paramLumaThrshold.addListener(this, &VideoTestShaderFX::setLumaThreshold);
-    paramLumaSmooth.addListener(this, &VideoTestShaderFX::setLumaSmooth);
-    
-    paramFrameIn.addListener(this, &VideoTestShaderFX::newVideoFrame);
 }
 
+    void VideoTestShaderFX::setupNodeBased()
+    {
+        lumaSmooth=0.25;
+        lumaThreshold=0.025;
+        source = NULL;
+        fps = -1;
+        isNodeBased = true;
+        
+        shader.load("shaders/lumakey");
+        
+        // allocate fbo where to draw
+        if (fbo.isAllocated()) fbo.allocate(source->getWidth(),source->getHeight(),GL_RGBA);
+        
+        // param nodes
+        
+        ofParameter<float>                  paramLumaThrshold;
+        ofParameter<float>                  paramLumaSmooth;
+        ofParameter<ofxPm::VideoFrame>      paramFrameIn;
+        ofParameter<ofxPm::VideoFrame>      paramFrameOut;
+        
+        
+        parameters = new ofParameterGroup();
+        parameters->setName("Luma Key");
+        parameters->add(paramLumaThrshold.set("Threshold",0.25,0.0,1.0));
+        parameters->add(paramLumaSmooth.set("Smooth",0.25,0.0,1.0));
+        parameters->add(paramFrameOut.set("Frame Output", frame));
+        parameters->add(paramFrameIn.set("Frame In", frame));
+        
+        parametersControl::getInstance().createGuiFromParams(parameters,ofColor::yellow);
+        
+        paramLumaThrshold.addListener(this, &VideoTestShaderFX::setLumaThreshold);
+        paramLumaSmooth.addListener(this, &VideoTestShaderFX::setLumaSmooth);
+        
+        paramFrameIn.addListener(this, &VideoTestShaderFX::newVideoFrame);
+    }
+
+    
 VideoFrame VideoTestShaderFX::getNextVideoFrame(){
     
 //    if(source->getNextVideoFrame()!=NULL)
@@ -124,6 +142,8 @@ void VideoTestShaderFX::newVideoFrame(VideoFrame & _frame){
 //    }
 //
 //
+    if (!fbo.isAllocated()) fbo.allocate(_frame.getWidth(), _frame.getHeight());
+
 	fbo.begin();
     {
         ofClear(0, 0, 0, 255);
@@ -138,7 +158,7 @@ void VideoTestShaderFX::newVideoFrame(VideoFrame & _frame){
         //	ofDrawRectangle(0,0,frame.getWidth(),frame.getHeight());
 //            plane.draw();
             //image.getTexture().draw(0, 0,640,480);
-            _frame.getTextureRef().draw(0,0,frame.getWidth(),frame.getHeight());
+            _frame.getTextureRef().draw(0,0,_frame.getWidth(),_frame.getHeight());
         }
         shader.end();
     }

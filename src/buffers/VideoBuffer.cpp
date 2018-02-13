@@ -35,6 +35,7 @@ void VideoBuffer::setup(VideoSource & _source, int size, bool allocateOnSetup)
 	source=&_source;
 	totalFrames=0;
 	maxSize = size;
+    isNodeBased=false;
 	
 	VideoSource::width = _source.getWidth();
 	VideoSource::height = _source.getHeight();
@@ -70,6 +71,7 @@ void VideoBuffer::setupNodeBased(int size, bool allocateOnSetup)
     source=NULL;
     totalFrames=0;
     maxSize = size;
+    isNodeBased=true;
     
     VideoSource::width = -1;
     VideoSource::height = -1;
@@ -316,20 +318,28 @@ void VideoBuffer::draw(){
 
 void VideoBuffer::stop()
 {
-	ofRemoveListener(source->newFrameEvent,this,&VideoBuffer::newVideoFrame);
+    if(!isNodeBased)
+    {
+        ofRemoveListener(source->newFrameEvent,this,&VideoBuffer::newVideoFrame);
+    }
+    else paramFrameIn.removeListener(this,&VideoBuffer::newVideoFrame);
+    
     stopped = true;
     
     stopTime = initTime.elapsed();
     
-    paramFrameIn.removeListener(this,&VideoBuffer::newVideoFrame);
+    
 
     cout << "Buffer: Stop! : " << endl;
 }
 
-void VideoBuffer::resume(){
-	//ofAddListener(source->newFrameEvent,this,&VideoBuffer::newVideoFrame);
-    
-    paramFrameIn.addListener(this, &VideoBuffer::newVideoFrame);
+void VideoBuffer::resume()
+{
+	if(!isNodeBased)
+    {
+        ofAddListener(source->newFrameEvent,this,&VideoBuffer::newVideoFrame);
+    }
+    else paramFrameIn.addListener(this, &VideoBuffer::newVideoFrame);
     
     stopped = false;
     

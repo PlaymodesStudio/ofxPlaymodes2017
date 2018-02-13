@@ -29,6 +29,7 @@ public:
 	int getWidth();
 	int getHeight();
     
+    ofParameter<ofxPm::VideoFrame>  frameOut;
     
 };
 }
