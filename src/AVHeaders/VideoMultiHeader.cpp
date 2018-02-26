@@ -40,7 +40,7 @@ void VideoMultiHeader::setup(VideoBuffer & _buffer){
     this->buffer= &_buffer;
     fps         = _buffer.getFps();
 	this->buffer->clear();
-	totalBufferSizeInMs = _buffer.size() * (1000.0/fps);
+	totalBufferSizeInMs = _buffer.getSizeInFrames() * (1000.0/fps);
 	oneFrameMs	= 1000.0 / fps;
     speed       = 1;
     inMs        = totalBufferSizeInMs;
@@ -184,7 +184,7 @@ void VideoMultiHeader::setFps(float fps){
 VideoFrame VideoMultiHeader::getVideoFrame(int index)
 {
 	buffer->lock();
-		int indexFrame = CLAMP(index,0,buffer->size()-1);
+		int indexFrame = CLAMP(index,0,buffer->getSizeInFrames()-1);
 		VideoFrame frame = buffer->getVideoFrame(indexFrame);
 	buffer->unlock();
 	return frame;

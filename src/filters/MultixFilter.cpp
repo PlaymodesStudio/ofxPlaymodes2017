@@ -6,12 +6,15 @@
  */
 
 #include "MultixFilter.h"
+#include "parametersControl.h"
+
+
 namespace ofxPm{
 
 
 MultixFilter::MultixFilter(VideoBuffer & _buffer, int numHeaders)
 {
-	setup(_buffer,numHeaders);
+//	setup(_buffer,numHeaders);
 }
 
 MultixFilter::~MultixFilter()
@@ -19,90 +22,213 @@ MultixFilter::~MultixFilter()
     //dtor
 }
 
-MultixFilter::MultixFilter(){
-	minmaxBlend=0;
-    opacityMode=0;
-	numHeaders=0;
-}
-
-void MultixFilter::setup(VideoBuffer & _buffer, int _numHeaders){
-
-    videoBuffer=&_buffer;
-    numHeaders=_numHeaders;
-
-    videoHeader.resize(numHeaders);
-    videoRenderer.resize(numHeaders);
-    for (int i=0;i<numHeaders;i++){
-        videoHeader[i].setup(*videoBuffer);
-        videoRenderer[i].setup(videoHeader[i]);
-        if(i==0)
-        {
-            videoHeader[i].setDelayMs(1);
-        }
-        else videoHeader[i].setDelayMs(-1);
-
-    }
-    
-    // RENDERING
-    
-    minmaxBlend=false;
-    
-    
-    // get initial video frame
-    VideoFrame v = videoBuffer->getNextVideoFrame();
-    if(!v.isNull())
-    {
-        cout << "Multix..." << endl;
-        frame = VideoFrame::newVideoFrame(videoBuffer->getNextVideoFrame());
-    }
-    ofAddListener(videoBuffer->newFrameEvent,this,&MultixFilter::newVideoFrame);
-
-    
-    // allocate fbo where to draw
-    if(videoBuffer->getWidth()>0) fbo.allocate(videoBuffer->getWidth(),videoBuffer->getHeight(),GL_RGBA);
-    else
-    {
-        cout << "MultixFilter !! WARNING : Fbo setup with default size !!" << endl;
-        fbo.allocate(640,480,GL_RGBA);
-    }
-
-
-}
-
-void MultixFilter::setNumHeaders(int _numHeaders){
-    this->numHeaders=_numHeaders;
-}
-
-int MultixFilter::getNumHeaders(){
-    return videoHeader.size();
-}
-
-
-//--------------------------------------------------------
-void MultixFilter::updateValuesMs(vector<float> _vf)
+MultixFilter::MultixFilter()
 {
-    // CLEAN headers and renderers and resize the to new
-    numHeaders = _vf.size();
-    int currNumHeaders = videoHeader.size();
-    if(currNumHeaders!=numHeaders){
+	
+}
+
+    void MultixFilter::setup(VideoBuffer & _buffer, int _numHeaders)
+    {
+    
+        videoBuffer=&_buffer;
+        numHeaders=_numHeaders;
+        paramMinMaxBlend=0;
+        opacityMode=0;
+        numHeaders=0;
+        isNodeBased = false;
+        
         videoHeader.resize(numHeaders);
         videoRenderer.resize(numHeaders);
-        for(int i=0;i<numHeaders;i++)
-        {
+        for (int i=0;i<numHeaders;i++){
             videoHeader[i].setup(*videoBuffer);
             videoRenderer[i].setup(videoHeader[i]);
+            if(i==0)
+            {
+                videoHeader[i].setDelayMs(1);
+            }
+            else videoHeader[i].setDelayMs(-1);
+
         }
-        cout << "Multix::Renderer::Update Ms WARNING : currNumHeaders!=numHeaders" << endl;
+        
+        // RENDERING
+        
+        paramMinMaxBlend=false;
+        
+        
+        // get initial video frame
+        VideoFrame v = videoBuffer->getNextVideoFrame();
+        if(!v.isNull())
+        {
+            cout << "Multix..." << endl;
+            frame = VideoFrame::newVideoFrame(videoBuffer->getNextVideoFrame());
+        }
+        ofAddListener(videoBuffer->newFrameEvent,this,&MultixFilter::newVideoFrame);
+
+        
+        // allocate fbo where to draw
+        if(videoBuffer->getWidth()>0) fbo.allocate(videoBuffer->getWidth(),videoBuffer->getHeight(),GL_RGBA);
+        else
+        {
+            cout << "MultixFilter !! WARNING : Fbo setup with default size !!" << endl;
+            fbo.allocate(640,480,GL_RGBA);
+        }
+
+
     }
     
-    // update the delayMs for each 
-    for(int i=_vf.size()-1; i>=0; i--)
+    //------------------------------------------------------------------
+    void MultixFilter::setupNodeBased()
     {
-        videoHeader[i].setDelayMs(_vf[i]);
-    }
-    videoHeader[0].setDelayMs(0);
+        isNodeBased = true;
+        
 
-}
+        // parametersGroup
+        
+        parameters = new ofParameterGroup();
+        parameters->setName("Multix Filter");
+        parameters->add(paramVideoBufferInput.set("Buffer Input", nullptr));
+        parameters->add(paramNumHeaders.set("Num Headers",0,0,480));
+        parameters->add(paramOpacityMode.set("Opacity Mode",0,0,2));
+        parameters->add(paramMinMaxBlend.set("MinMax Blend",true));
+        parameters->add(paramUseBPM.set("Use BPM",true));
+        parameters->add(paramOffsetBeatDiv.set("Beats Div",1,1,32));
+        parameters->add(paramOffsetBeatMult.set("Beats Mult",1,1,32));
+        parameters->add(paramManualOffsetMs.set("Manual Offset Ms",33.0,0.0,4000.0));
+        parameters->add(paramLinearDistribution.set("Linear Distribution",true));
+        parameters->add(paramDistributionVector.set("Distribution Vector",{0}));
+        parameters->add(paramFrameOut.set("Frame Output", frame));
+
+        
+        parametersControl::getInstance().createGuiFromParams(parameters,ofColor::orange);
+        
+        paramOffsetBeatDiv.addListener(this, &MultixFilter::recalculate);
+        paramOffsetBeatMult.addListener(this, &MultixFilter::recalculate);
+        paramNumHeaders.addListener(this,&MultixFilter::recalculate);
+        paramVideoBufferInput.addListener(this, &MultixFilter::setVideoBuffer);
+        paramDistributionVector.addListener(this,&MultixFilter::changedDistributionVector);
+        
+    }
+    //------------------------------------------------------------------
+    void MultixFilter::changedDistributionVector(vector<float> &_v)
+    {
+        int i = 0;
+        if(paramVideoBufferInput.get()!=nullptr) recalculate(i);
+    }
+    //------------------------------------------------------------------
+
+    void MultixFilter::setNumHeaders(int _numHeaders){
+        paramNumHeaders=_numHeaders;
+    }
+
+    //------------------------------------------------------------------
+    int MultixFilter::getNumHeaders(){
+        return videoHeader.size();
+    }
+
+    
+    //-----------------------------------------
+    void ofxPm::MultixFilter::recalculate(int &_i)
+    {
+        
+        float gBPM = parametersControl::getInstance().getGlobalBPM();
+        float BPMfactor;
+        if(paramOffsetBeatDiv!=0)
+        {
+            BPMfactor = (float(paramOffsetBeatMult)/float(paramOffsetBeatDiv));
+        }
+        else  BPMfactor = 1.0;
+
+        float oneBeatMs = (60.0/gBPM)*1000;
+        float oneCopyMs = oneBeatMs / BPMfactor;
+    
+        vector<float> vf;
+        //this->setNumHeaders(paramNumHeaders);
+    
+        for(int i=0;i<paramNumHeaders;i++)
+        {
+            if(paramLinearDistribution)
+            {
+                // in linear distribution, the copies are spaced equally a time/distance defined by BPM and beatMult/Div
+                vf.push_back(i*oneCopyMs);
+            }
+            else
+            {
+                
+                
+                //            int oscillatorReIndex = int(ofMap(i,0,float(guiNumCopies),0,float(numOscillatorBanks)));
+                //            mutex.lock();
+                //            {
+                //                vf.push_back(ofMap(guiMultixValues.get()[oscillatorReIndex],0.0,1.0, 0.0, oneCopyMs));
+                //            }
+                //            mutex.unlock();
+
+                
+                // non-linear distribution, the copies are distributed from 0 to the time expressed by BPM/Mult/Div.
+                // And inside this period the copies are distributed by Generator
+                // TO DO
+//                float outMin,outMax;
+                
+                int oscillatorReIndex = int(ofMap(i,0,float(paramNumHeaders),0,float(paramVideoBufferInput.get()->getSizeInFrames())));
+//                int oscillatorReIndex = int(ofMap(i,0,float(paramNumHeaders),0,float(numOscillatorBanks)));
+                float m;
+                mutex.lock();
+                {
+                    m = paramDistributionVector.get().at(oscillatorReIndex);
+                    vf.push_back(ofMap(m,0.0,1.0, 0.0, oneCopyMs));
+                    //vf.push_back(ofMap(guiMultixValues.get()[oscillatorReIndex],0.0,1.0, 0.0, oneCopyMs));
+                }
+                mutex.unlock();
+               //cout << i << " ::  OscillatorReindex: " << oscillatorReIndex << " // m : " << m << " :: maxSize : " << paramVideoBufferInput.get()->getMaxSize()<< endl;
+            }
+        }
+            this->updateValuesMs(vf);
+
+        //    // Calculating "Overflow" it happens when we're trying to fetch a video frame that is out of bounds in the buffer
+        //    float oneFrameMs = (1.0 / grabFPS) * 1000.0;
+        //    float timeInBuffer = vBuffer.getMaxSize()*oneFrameMs;
+        //    float timeInCopies = oneCopyMs*guiNumCopies;
+        //    if(timeInCopies > timeInBuffer)
+        //    {
+        //        cout << "OVERFLOOOOW!! OneCopyMs : " << oneCopyMs << " // guiNumCopies : " << guiNumCopies << " = " << timeInCopies << " //  > " << timeInBuffer << " // buffer Size : " << vBuffer.getMaxSize() << endl;
+        //        copiesOverflowBuffer = true;
+        //    }
+        //    else
+        //    {
+        //        copiesOverflowBuffer = false;
+        //    }
+        
+    }
+    
+
+    //--------------------------------------------------------
+    void MultixFilter::updateValuesMs(vector<float> _vf)
+    {
+        if(videoBuffer!=NULL)
+        {
+            // CLEAN headers and renderers and resize the to new
+            //setNumHeaders(_vf.size());
+            int currNumHeaders = videoHeader.size();
+            if(currNumHeaders!=paramNumHeaders){
+                videoHeader.resize(paramNumHeaders);
+                videoRenderer.resize(paramNumHeaders);
+                for(int i=0;i<paramNumHeaders;i++)
+                {
+                    videoHeader[i].setup(*videoBuffer);
+                    videoRenderer[i].setup(videoHeader[i]);
+                }
+                cout << "Multix::Renderer::Update Ms WARNING : currNumHeaders!=numHeaders" << endl;
+            }
+            
+            // update the delayMs for each
+            for(int i=_vf.size()-1; i>=0; i--)
+            {
+                videoHeader[i].setDelayMs(_vf[i]);
+            }
+            videoHeader[0].setDelayMs(0);
+
+        }
+
+    }
     
 //--------------------------------------------------------
 void MultixFilter::updateValuesPct(vector<float> _vf)
@@ -143,14 +269,12 @@ void MultixFilter::updateValuesPct(vector<float> _vf)
 //--------------------------------------------------------
 VideoFrame MultixFilter::getNextVideoFrame()
 {
-    
     //    if(source->getNextVideoFrame()!=NULL)
     //    {
     //        return source->getNextVideoFrame();
     //    }
     //newVideoFrame(frame);
     return frame;
-    
 }
 
 //--------------------------------------------------------
@@ -169,20 +293,29 @@ void MultixFilter::newVideoFrame(VideoFrame & _frame)
 
     fbo.begin();
     {
-        ofClear(0,0,0,255);
+        if(paramMinMaxBlend) ofClear(0,0,0,255);
+        else ofClear(255,255,255,255);
         ofSetColor(255);
         //ofDrawRectangle(0,0,fbo.getWidth()-ofGetMouseX(),fbo.getHeight());
         //_frame.getTextureRef().draw(0,0,fbo.getWidth(),fbo.getHeight());
         //videoRenderer[1].draw(ofGetMouseX(),ofGetMouseY(),fbo.getWidth(),fbo.getHeight());
         drawIntoFbo(0,0,fbo.getWidth(),fbo.getHeight());
+        ofDrawCircle(320,240,50);
         
     }
     fbo.end();
     
 
     frame = VideoFrame::newVideoFrame(fbo);
-    ofNotifyEvent(newFrameEvent,frame);
     
+    if(!isNodeBased) ofNotifyEvent(newFrameEvent,frame);
+    else
+    {
+        parameters->get("Frame Output").cast<ofxPm::VideoFrame>() = frame;
+    }
+    
+
+    //cout << "MultixFilter : Got a new VideoFrame ! " << endl;
 }
 
 //--------------------------------------------------------
@@ -191,12 +324,14 @@ void MultixFilter::drawIntoFbo(int x, int y,int w, int h)
     // TO DO : needed ?
     //ofEnableAlphaBlending();
 
-    if(minmaxBlend){
+    if(paramMinMaxBlend)
+    {
         glBlendEquationEXT(GL_MAX);
     }else{
         glBlendEquationEXT(GL_MIN);
     }
 
+    
     // As we've
     int headersInAction = 0;
     float oneFrameMs	= 1000.0 / videoBuffer->getFps();
@@ -206,7 +341,7 @@ void MultixFilter::drawIntoFbo(int x, int y,int w, int h)
 	for(int i = videoHeader.size()-1; i>=0; i--)
     {
         // if delay time of each videoRenderer is in the right range of Ms (0..TotalMs)
-        switch(opacityMode)
+        switch(paramOpacityMode)
         {
             case 0 :
                 opac = 1.0;
@@ -255,14 +390,11 @@ void MultixFilter::drawIntoFbo(int x, int y,int w, int h)
 
 bool MultixFilter::isMinmaxBlend() const
 {
-    return minmaxBlend;
+    return paramMinMaxBlend;
 }
 
 
-void MultixFilter::setMinmaxBlend(bool b)
-{
-    this->minmaxBlend = b;
-}
+
 
 
 VideoHeader * MultixFilter::getHeader(int header){
@@ -273,8 +405,43 @@ VideoRenderer * MultixFilter::getRenderer(int renderer){
 	return &videoRenderer[renderer];
 }
  
-    
+    //-----------------------------------------
+    void MultixFilter::setVideoBuffer(ofxPm::VideoBuffer* &_videoBuffer)
+    {
+        videoBuffer = _videoBuffer;
+        
+        // allocate fbo where to draw
+        if (fbo.getWidth()<=0)
+        {
+            // setup FBO
+            int resX = videoBuffer->getWidth();
+            int resY = videoBuffer->getHeight();
+            fbo.allocate(resX,resY,GL_RGBA);
+            
+            
+            // setup Headers
+            videoHeader.resize(paramNumHeaders);
+            videoRenderer.resize(paramNumHeaders);
+            for (int i=0;i<paramNumHeaders;i++){
+                videoHeader[i].setup(*videoBuffer);
+                videoRenderer[i].setup(videoHeader[i]);
+                if(i==0)
+                {
+                    videoHeader[i].setDelayMs(1);
+                }
+                else videoHeader[i].setDelayMs(-1);
+                
+            }
+
+        }
+
+        
+        ofxPm::VideoFrame vf;
+        newVideoFrame(vf);
+        
+
+    }
+
     
 }
-
 

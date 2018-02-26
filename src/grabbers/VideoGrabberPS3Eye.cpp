@@ -25,7 +25,7 @@ bool VideoGrabberPS3Eye::initGrabber(int w, int h){
     parameters->add(paramHue.set("Hue",0,0,255));
     parameters->add(paramAutoGain.set("AutoGrain",false));
     parameters->add(paramAutoWB.set("AutoWB",false));
-    parameters->add(frameOut.set("Frame Output", frame));
+    parameters->add(paramFrameOut.set("Frame Output", frame));
     
     parametersControl::getInstance().createGuiFromParams(parameters,ofColor::orange);
     

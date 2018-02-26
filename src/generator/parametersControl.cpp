@@ -1523,8 +1523,9 @@ void parametersControl::listenerFunction(ofAbstractParameter& e){
     int position = 0;
     vector<shared_ptr<nodeConnection>> validConnections;
     
-    if(e.getName() == "Phasor Monitor"){
-        return;
+    if(e.getName() == "Phasor Monitor")
+    {
+        //return;
     }
     
     auto parent = e.getGroupHierarchyNames()[0];
@@ -1717,6 +1718,9 @@ void parametersControl::setFromSameTypeValue(shared_ptr<nodeConnection> connecti
             }
             else if(source->type() == typeid(ofParameter<ofxPm::VideoFrame>).name()){
                 sink->cast<ofxPm::VideoFrame>() = source->cast<ofxPm::VideoFrame>();
+            }
+            else if(source->type() == typeid(ofParameter<ofxPm::VideoBuffer*>).name()){
+                sink->cast<ofxPm::VideoBuffer*>() = source->cast<ofxPm::VideoBuffer*>();
             }
         }else{
             for(auto &connection : connections){

@@ -16,10 +16,13 @@
 #include "HeaderLooperRenderer.h"
 
 #include "VideoHeader.h"
+#include "VideoHeaderNodeBased.h"
 #include "BasicVideoRenderer.h"
 #include "VideoRenderer.h"
 #include "MultixRenderer.h"
 #include "VideoTrioRenderer.h"
+#include "VideoRenderer.h"
+#include "VideoRendererNodeBased.h"
 
 
 #include "MultixFilter.h"

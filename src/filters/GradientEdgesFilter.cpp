@@ -78,19 +78,13 @@ GradientEdgesFilter::~GradientEdgesFilter() {
         if (fbo.isAllocated()) fbo.allocate(frame.getWidth(),frame.getHeight(),GL_RGBA);
         
         // param nodes
-        
-        ofParameter<float>                  paramLumaThrshold;
-        ofParameter<float>                  paramLumaSmooth;
-        ofParameter<ofxPm::VideoFrame>      paramFrameIn;
-        ofParameter<ofxPm::VideoFrame>      paramFrameOut;
-        
-        
+                
         parameters = new ofParameterGroup();
         parameters->setName("Gradient Edges");
         parameters->add(paramGradientWidth.set("Width",0.25,0.0,1.0));
         parameters->add(paramGradientXorY.set("X or Y",1,0,1));
+        parameters->add(paramFrameIn.set("Frame Input", frame));
         parameters->add(paramFrameOut.set("Frame Output", frame));
-        parameters->add(paramFrameIn.set("Frame In", frame));
         
         parametersControl::getInstance().createGuiFromParams(parameters,ofColor::yellow);
         

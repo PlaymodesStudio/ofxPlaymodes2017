@@ -59,7 +59,7 @@ public:
         newVideoFrame(*frame);
     }
 
-	unsigned int size();                            // total size of the buffer
+    unsigned int getSizeInFrames();
 	unsigned int getMaxSize();                         // max size of the buffer
 
 	float getFps();                                   // fps of the video source
@@ -69,7 +69,7 @@ public:
 	Timestamp getInitTime();                      // time of the first frame in the recording
 
     long getTotalFrames();                          // total frames since the beginning of the recording
-	double getRealFPS();                             // aprox fps from source
+	//double getRealFPS();                             // aprox fps from source
 	//int currentPos;                                 // currentPos in the buffer
 
 	void draw();                                    // draws the stats of the buffer
@@ -93,11 +93,14 @@ protected:
     unsigned int maxSize;
     int framesOneSec;
     int64_t microsOneSec;
-    double realFps;
+    //double realFps;
+    
     
     // FEATURE NODE
     ofParameterGroup*                   parameters;
-    ofParameter<ofxPm::VideoFrame>      paramFrameIn;
+    ofParameter<ofxPm::VideoBuffer*>    paramVideoBufferOut;
+    ofParameter<float>                  paramFPS;
+    //ofParameter<ofxPm::VideoFrame>      paramFrameIn;
 //    ofParameter<ofxPm::VideoFrame>      paramFrameOut;
     bool                                isNodeBased;
     

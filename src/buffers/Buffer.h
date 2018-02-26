@@ -17,7 +17,7 @@ public:
 	Buffer();
 	virtual ~Buffer();
 
-	unsigned int size();
+	unsigned int getSize();
 
     void lock();
     void unlock();

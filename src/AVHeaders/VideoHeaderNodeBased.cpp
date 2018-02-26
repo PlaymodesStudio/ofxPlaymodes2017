@@ -5,21 +5,19 @@
  *      Author: arturo castro
  */
 
-#include "VideoHeader.h"
+#include "VideoHeaderNodeBased.h"
+#include "parametersControl.h"
 
 namespace ofxPm{
-VideoHeader::VideoHeader(VideoBuffer & buffer){
-setup(buffer);
-}
 
 //------------------------------------------------------
-VideoHeader::VideoHeader(){
+VideoHeaderNodeBased::VideoHeaderNodeBased(){
     fps         = 25.0;
 	oneFrameMs	= 1000.0 / fps;
     inMs        = 0;
     outMs       = 0;
 	lengthMs		= inMs - outMs;
-	buffer 		= NULL;
+	//buffer 		= NULL;
 	lengthMs = 0;
 	offsetFrames = 0.0;
 	width = -11;
@@ -28,36 +26,47 @@ VideoHeader::VideoHeader(){
 }
 
 
-//------------------------------------------------------
-void VideoHeader::setup(VideoBuffer & _buffer){
-    //newFrameEvent.init("Playmodes.VideoHeader.newFrame");
-    this->buffer= &_buffer;
-    fps         = _buffer.getFps();
-	this->buffer->clear();
-    oneFrameMs	= 1000.0 / fps;
-	totalBufferSizeInMs = _buffer.getSizeInFrames() * oneFrameMs;
-    inMs        = totalBufferSizeInMs;
-    outMs       = 0;
-	lengthMs	= totalBufferSizeInMs;
-	offsetFrames = 0.0;
-    playing=false;
-
-	
-	VideoSource::width = _buffer.getWidth();
-	VideoSource::height = _buffer.getHeight();
-	
-	printf("VideoHeader::setup %d %d @ FPS %f\n",_buffer.getWidth(),_buffer.getHeight(),fps);
+    //------------------------------------------------------
+    void VideoHeaderNodeBased::setupNodeBased()
+    {
+//        //newFrameEvent.init("Playmodes.VideoHeader.newFrame");
+//        this->buffer= &_buffer;
+//        fps         = _buffer.getFps();
+//        this->buffer->clear();
+        oneFrameMs	= 1000.0 / fps;
+//        totalBufferSizeInMs = _buffer.getSizeInFrames() * oneFrameMs;
+        inMs        = totalBufferSizeInMs;
+        outMs       = 0;
+        lengthMs	= totalBufferSizeInMs;
+        offsetFrames = 0.0;
+        playing=false;
+        
+        parameters = new ofParameterGroup();
+        parameters->setName("Video Header");
+        parameters->add(paramVideoBufferInput.set("Buffer Input", nullptr));
+        parameters->add(paramDelayMs.set("Delay Ms",0.0,0.0,3000.0));
+        parameters->add(paramFrameOut.set("Frame Output",VideoFrame::VideoFrame()));
+        
+        parametersControl::getInstance().createGuiFromParams(parameters,ofColor::white);
+        
+        paramVideoBufferInput.addListener(this, &VideoHeaderNodeBased::setVideoBuffer);
+        
+        
+//        VideoSource::width = _buffer.getWidth();
+//        VideoSource::height = _buffer.getHeight();
+//        
+//        printf("VideoHeader::setup %d %d @ FPS %f\n",_buffer.getWidth(),_buffer.getHeight(),fps);
 }
 
 //------------------------------------------------------
-VideoHeader::~VideoHeader(){
+VideoHeaderNodeBased::~VideoHeaderNodeBased(){
 }
 
 //------------------------------------------------------
-void VideoHeader::draw(){
+void VideoHeaderNodeBased::draw(){
 	
     // DRAWS THE BUFFER UI, NO TEXTURE AT ALL !!
-    
+    /*
 	ofEnableAlphaBlending();
 	
     double oneLength=(double)(ofGetWidth()-PMDRAWSPACING*2)/(double)(buffer->getMaxSize());
@@ -112,37 +121,38 @@ void VideoHeader::draw(){
     ofSetColor(255,255,255);
 	
 	ofDisableAlphaBlending();
+     */
 }
 //------------------------------------------------------
-VideoFrame VideoHeader::getNextVideoFrame()
+VideoFrame VideoHeaderNodeBased::getNextVideoFrame()
     {
         
     // frame to be returned;
     VideoFrame frame;
     
-    buffer->lock();
+    paramVideoBufferInput.get()->lock();
     {
         // get the next frame timeStamp based on current behaviour
         currentFrameTs = getNextFrameTimestamp();
         // fetch closest video frame from buffer
-        frame = buffer->getVideoFrame(currentFrameTs);
+        frame = paramVideoBufferInput.get()->getVideoFrame(currentFrameTs);
         // get the index of the fetched frame
         currentFrameIndex = frame.getBufferIndex();
     }
-    buffer->unlock();
+    paramVideoBufferInput.get()->unlock();
     return frame;
 }
 
 //------------------------------------------------------
-Timestamp   VideoHeader::getNextFrameTimestamp()
+Timestamp   VideoHeaderNodeBased::getNextFrameTimestamp()
 {
     // to be returned
     Timestamp ts;
     
     // when buffer is not stopped we need to update the nowTS which is used to update TS of delay,inTS,outTS ...
-    if(!buffer->isStopped())
+    if(!paramVideoBufferInput.get()->isStopped())
     {
-        nowTS = buffer->getFirstFrameTimestamp();
+        nowTS = paramVideoBufferInput.get()->getFirstFrameTimestamp();
     }
 
     //update in and out TS based on "nowTS"
@@ -153,17 +163,17 @@ Timestamp   VideoHeader::getNextFrameTimestamp()
     outTS = nowTS - TimeDiff(outMs*1000);
     
     // calculate the ts of the needed frame
-    ts = nowTS - TimeDiff(delayInMs*1000);
+    ts = nowTS - TimeDiff(paramDelayMs*1000);
 
     return ts;
 }
 
 //------------------------------------------------------
-float VideoHeader::getFps(){
+float VideoHeaderNodeBased::getFps(){
     return fps;
 }
 //------------------------------------------------------
-void VideoHeader::setFps(float fps){
+void VideoHeaderNodeBased::setFps(float fps){
     this->fps=fps;
 }
 //------------------------------------------------------
@@ -177,42 +187,83 @@ void VideoHeader::setFps(float fps){
 }
  */
 //------------------------------------------------------
-VideoBuffer *VideoHeader::getBuffer()
+VideoBuffer* VideoHeaderNodeBased::getBuffer()
 {
-    return buffer;
+    return paramVideoBufferInput.get();
 }
 
 //------------------------------------------------------
-void VideoHeader::setDelayMs(double _delayMs)
+void VideoHeaderNodeBased::setDelayMs(double _delayMs)
 {
-    delayInMs = _delayMs;
+    paramDelayMs = _delayMs;
 }
 
 
 		
 //------------------------------------------------------
-string VideoHeader::getInfo()
+string VideoHeaderNodeBased::getInfo()
 {
     return "";
 }
 	
 //------------------------------------------------------
-void	VideoHeader::setOffsetInFrames(int _o)
+void	VideoHeaderNodeBased::setOffsetInFrames(int _o)
 {
 	offsetFrames = _o;
 }
 
 //------------------------------------------------------
-void VideoHeader::setInMs(double _in)
+void VideoHeaderNodeBased::setInMs(double _in)
 {
     this->inMs = _in;
 }
 
 //------------------------------------------------------
-void VideoHeader::setOutMs(double _out)
+void VideoHeaderNodeBased::setOutMs(double _out)
 {
     this->outMs = _out;
 }
+
+    //-----------------------------------------
+    void VideoHeaderNodeBased::setVideoBuffer(ofxPm::VideoBuffer* &_videoBuffer)
+    {
+//
+//        // allocate fbo where to draw
+//        if (fbo.getWidth()<=0)
+//        {
+//            // setup FBO
+//            int resX = videoBuffer->getWidth();
+//            int resY = videoBuffer->getHeight();
+//            fbo.allocate(resX,resY,GL_RGBA);
+//            
+//            
+//            // setup Headers
+//            videoHeader.resize(paramNumHeaders);
+//            videoRenderer.resize(paramNumHeaders);
+//            for (int i=0;i<paramNumHeaders;i++){
+//                videoHeader[i].setup(*videoBuffer);
+//                videoRenderer[i].setup(videoHeader[i]);
+//                if(i==0)
+//                {
+//                    videoHeader[i].setDelayMs(1);
+//                }
+//                else videoHeader[i].setDelayMs(-1);
+//                
+//            }
+//            
+//        }
+//        
+//
+        
+        cout << "setting Video Buffer and sending new frame to header !!"  << endl;
+
+        ofxPm::VideoFrame vf;
+        vf = getNextVideoFrame();
+        parameters->get("Frame Output").cast<ofxPm::VideoFrame>() = vf;
+        
+        
+    }
+
     
 }
 

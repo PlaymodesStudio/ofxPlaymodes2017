@@ -100,8 +100,8 @@ void VideoTestShaderFX::setup(VideoSource & _source){
         parameters->setName("Luma Key");
         parameters->add(paramLumaThrshold.set("Threshold",0.25,0.0,1.0));
         parameters->add(paramLumaSmooth.set("Smooth",0.25,0.0,1.0));
+        parameters->add(paramFrameIn.set("Frame Input", frame));
         parameters->add(paramFrameOut.set("Frame Output", frame));
-        parameters->add(paramFrameIn.set("Frame In", frame));
         
         parametersControl::getInstance().createGuiFromParams(parameters,ofColor::yellow);
         

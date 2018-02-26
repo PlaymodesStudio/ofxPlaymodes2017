@@ -12,132 +12,164 @@
 namespace ofxPm
 {
 
-VideoBuffer::VideoBuffer(VideoSource & source, int size)
-{
-	setup(source,size,true);
-}
-
-VideoBuffer::VideoBuffer()
-{
-	source = NULL;
-	totalFrames=0;
-	stopped = false;
-	maxSize = 0;
-	microsOneSec=0;
-	realFps = 0.0;
-	framesOneSec = 0;
-//    stopTime=0;
-}
-
-
-void VideoBuffer::setup(VideoSource & _source, int size, bool allocateOnSetup)
+    //------------------------------------------------------
+    VideoBuffer::VideoBuffer(VideoSource & source, int size)
     {
-	source=&_source;
-	totalFrames=0;
-	maxSize = size;
-    isNodeBased=false;
-	
-	VideoSource::width = _source.getWidth();
-	VideoSource::height = _source.getHeight();
+        setup(source,size,true);
+        
+    }
 
-	if(allocateOnSetup){
-		printf("VideoBuffer:: allocating on setup %d %d : ",VideoSource::getWidth(),VideoSource::getHeight());
-		for(int i=0;i<size;i++){
-			VideoFrame videoFrame = VideoFrame::newVideoFrame(source->getNextVideoFrame().getPixelsRef());
-			//videoFrame.getTextureRef();
-			newVideoFrame(videoFrame);
-			printf("%d-",i);
-		}
-		printf("//\n");
-	}
-	
-	microsOneSec=-1;
+    //------------------------------------------------------
+    VideoBuffer::VideoBuffer()
+    {
+        source = NULL;
+        totalFrames=0;
+        stopped = false;
+        maxSize = 0;
+        microsOneSec=0;
+//        realFps = 0.0;
+        framesOneSec = 0;
+        
+    //    stopTime=0;
+    }
+
+
+
+    //------------------------------------------------------
+    void VideoBuffer::setup(VideoSource & _source, int size, bool allocateOnSetup)
+    {
+        source=&_source;
+        totalFrames=0;
+        maxSize = size;
+        isNodeBased=false;
+        
+        VideoSource::width = _source.getWidth();
+        VideoSource::height = _source.getHeight();
+
+        if(allocateOnSetup){
+            printf("VideoBuffer:: allocating on setup %d %d : ",VideoSource::getWidth(),VideoSource::getHeight());
+            for(int i=0;i<size;i++){
+                VideoFrame videoFrame = VideoFrame::newVideoFrame(source->getNextVideoFrame().getPixelsRef());
+                //videoFrame.getTextureRef();
+                newVideoFrame(videoFrame);
+                printf("%d-",i);
+            }
+            printf("//\n");
+        }
+        
+        microsOneSec=-1;
+            
+        // do this the last to avoid sending nullptr frame
+        resume();
+    }
+
+    //------------------------------------------------------
+    void VideoBuffer::setupNodeBased(int size, bool allocateOnSetup)
+    {
+        source=NULL;
+        totalFrames=0;
+        maxSize = size;
+        isNodeBased=true;
+        
+        VideoSource::width = -1;
+        VideoSource::height = -1;
+        
+        if(allocateOnSetup && VideoSource::width!=-1)
+        {
+            printf("VideoBuffer:: allocating on setup %d %d : ",VideoSource::getWidth(),VideoSource::getHeight());
+            for(int i=0;i<size;i++){
+                VideoFrame videoFrame = VideoFrame::newVideoFrame(source->getNextVideoFrame().getPixelsRef());
+                //videoFrame.getTextureRef();
+                newVideoFrame(videoFrame);
+                printf("%d-",i);
+            }
+            printf("//\n");
+        }
+        else cout << "Video Buffer in 'node based' was not allocated on setup." << endl;
+        
+        microsOneSec=-1;
         
         // parametersGroup
         parameters = new ofParameterGroup();
         parameters->setName("Video Buffer");
-        ofxPm::VideoFrame vf;
-        parameters->add(paramFrameIn.set("Frame Input",vf));
+        parameters->add(paramFPS.set("FPS",60,0,60));
+        parameters->add(paramFrameIn.set("Frame Input",VideoFrame::VideoFrame()));
+        parameters->add(paramFrameOut.set("Frame Output",VideoFrame::VideoFrame()));
+        parameters->add(paramVideoBufferOut.set("Buffer Output",nullptr));
+        
         //    parameters->add(paramFrameIn.set("Frame Output",vf));
         
         parametersControl::getInstance().createGuiFromParams(parameters,ofColor::red);
         
-    // do this the last to avoid sending nullptr frame
-    resume();
-}
-
-void VideoBuffer::setupNodeBased(int size, bool allocateOnSetup)
-{
-    source=NULL;
-    totalFrames=0;
-    maxSize = size;
-    isNodeBased=true;
-    
-    VideoSource::width = -1;
-    VideoSource::height = -1;
-    
-    if(allocateOnSetup && VideoSource::width!=-1)
-    {
-        printf("VideoBuffer:: allocating on setup %d %d : ",VideoSource::getWidth(),VideoSource::getHeight());
-        for(int i=0;i<size;i++){
-            VideoFrame videoFrame = VideoFrame::newVideoFrame(source->getNextVideoFrame().getPixelsRef());
-            //videoFrame.getTextureRef();
-            newVideoFrame(videoFrame);
-            printf("%d-",i);
-        }
-        printf("//\n");
+        // do this the last to avoid sending nullptr frame
+        resume();
     }
-    else cout << "Video Buffer in 'node based' was not allocated on setup." << endl;
-    
-    microsOneSec=-1;
-    
-    // parametersGroup
-    parameters = new ofParameterGroup();
-    parameters->setName("Video Buffer");
-    ofxPm::VideoFrame vf;
-    parameters->add(paramFrameIn.set("Frame Input",vf));
-    //    parameters->add(paramFrameIn.set("Frame Output",vf));
-    
-    parametersControl::getInstance().createGuiFromParams(parameters,ofColor::red);
-    
-    // do this the last to avoid sending nullptr frame
-    resume();
-}
 
 VideoBuffer::~VideoBuffer() {
 
 }
 
-void VideoBuffer::newVideoFrame(VideoFrame & frame)
+    //----------------------------------------------------
+    void VideoBuffer::newVideoFrame(VideoFrame & frame)
     {
-        
-	int64_t time = frame.getTimestamp().epochMicroseconds();
-	if(microsOneSec==-1) microsOneSec=time;
-	framesOneSec++;
-	int64_t diff = time-microsOneSec;
-	if(diff>=1000000){
-		realFps = double(framesOneSec*1000000.)/double(diff);
-		framesOneSec = 0;
-		microsOneSec = time-(diff-1000000);
-	}
-    totalFrames++;
-//    if(size()==0)initTime=frame.getTimestamp();
-    TimeDiff tdiff = frame.getTimestamp() - initTime;
-        //cout << "Buff::NewVideoFrame:: with TS = " << tdiff << " Which comes from frameTS : " << frame.getTimestamp().raw() << " - initTime " << initTime.raw() << endl;
-    frame.setTimestamp(tdiff );
-    //timeMutex.lock();
-    frames.push_back(frame);
-    //cout << "Buffer : newVideoFrame with TS : " << frame.getTimestamp().raw() << endl;
-    while(size()>maxSize){
-        frames.erase(frames.begin());
-    }
-    //timeMutex.unlock();
-    newFrameEvent.notify(this,frame);
+        if(width<=0)
+        {
+            cout << "BuffNewVideoFrame = " << frame.getWidth() << " , " << frame.getHeight() << endl;
+            this->setWidth(frame.getWidth());
+            this->setHeigth(frame.getHeight());
+            
+//            printf("VideoBuffer:: allocating NOW %d %d : ",frame.getWidth(),frame.getHeight());
+//            for(int i=0;i<size;i++)
+//            {
+//                if(!isNodeBased)
+//                {
+//                    VideoFrame videoFrame = VideoFrame::newVideoFrame(source->getNextVideoFrame().getPixelsRef());
+//                }
+//                else
+//                {
+//                    
+//                }
+//                //videoFrame.getTextureRef();
+//                newVideoFrame(videoFrame);
+//                printf("%d-",i);
+//            }
+//            printf("//\n");
+        }
 
-}
+        
+            
+            
+        int64_t time = frame.getTimestamp().epochMicroseconds();
+        if(microsOneSec==-1) microsOneSec=time;
+        framesOneSec++;
+        int64_t diff = time-microsOneSec;
+        if(diff>=1000000){
+            //realFps = double(framesOneSec*1000000.)/double(diff);
+            framesOneSec = 0;
+            microsOneSec = time-(diff-1000000);
+        }
+        totalFrames++;
+    //    if(size()==0)initTime=frame.getTimestamp();
+        TimeDiff tdiff = frame.getTimestamp() - initTime;
+            //cout << "Buff::NewVideoFrame:: with TS = " << tdiff << " Which comes from frameTS : " << frame.getTimestamp().raw() << " - initTime " << initTime.raw() << endl;
+        frame.setTimestamp(tdiff );
+        //timeMutex.lock();
+        frames.push_back(frame);
+        //cout << "Buffer : newVideoFrame with TS : " << frame.getTimestamp().raw() << endl;
+        while(getSizeInFrames()>maxSize){
+            frames.erase(frames.begin());
+        }
+        //timeMutex.unlock();
+        newFrameEvent.notify(this,frame);
+
+            parameters->get("Frame Output").cast<ofxPm::VideoFrame>() = frame;
+
+            parameters->get("Buffer Output").cast<ofxPm::VideoBuffer*>() = (ofxPm::VideoBuffer*)this;
+
+    }
 
 Timestamp VideoBuffer::getLastTimestamp(){
-    if(size()>0)
+    if(getSizeInFrames()>0)
         return frames.back().getTimestamp();
     else
         return Timestamp();
@@ -151,9 +183,6 @@ Timestamp VideoBuffer::getInitTime(){
     return initTime;
 }
 
-unsigned int VideoBuffer::size(){
-    return frames.size();
-}
 
 
 unsigned int VideoBuffer::getMaxSize(){
@@ -162,8 +191,8 @@ unsigned int VideoBuffer::getMaxSize(){
 
 
 float VideoBuffer::getFps(){
-    if(source) return source->getFps();
-    else return 0;
+    if(!isNodeBased) return source->getFps();
+    else return paramFPS;
 }
     
 //---- TS
@@ -174,7 +203,7 @@ VideoFrame VideoBuffer::getVideoFrame(Timestamp ts)
     if(frames.size()>0)
     {
         TimeDiff tdiff = 1000000000000000;
-        for(int i=0;i<size();i++)
+        for(int i=0;i<getSizeInFrames();i++)
         {
             TimeDiff tdiff2 = abs(ts - frames[i].getTimestamp());
             //cout << "Buffer:GetVFr:: Frame : "<< i << " has a TS of : " << frames[i].getTimestamp().raw()  <<  " and we look for " << ts.raw() << " . The diff is = " << tdiff2 << endl;
@@ -202,10 +231,10 @@ VideoFrame VideoBuffer::getVideoFrame(Timestamp ts)
 VideoFrame VideoBuffer::getVideoFrame(TimeDiff time)
 {
     VideoFrame frame;
-    if(size()>0)
+    if(getSizeInFrames()>0)
     {
-        int frameback = CLAMP((int)((float)time/1000000.0*(float)getFps()),1,int(size()));
-        int currentPos = CLAMP(size()-frameback,0,size()-1);
+        int frameback = CLAMP((int)((float)time/1000000.0*(float)getFps()),1,int(getSizeInFrames()));
+        int currentPos = CLAMP(getSizeInFrames()-frameback,0,getSizeInFrames()-1);
         frame = frames[currentPos];
     }
 
@@ -215,8 +244,8 @@ VideoFrame VideoBuffer::getVideoFrame(TimeDiff time)
     
 VideoFrame VideoBuffer::getVideoFrame(int position){
     //return buffer.find(times[times.size()-position])->second;
-    if(size()){
-        position = CLAMP(position,0,int(size())-1);
+    if(getSizeInFrames()){
+        position = CLAMP(position,0,int(getSizeInFrames())-1);
         //cout << "frame " << position << " retained " << frames[position]->_useCountOfThisObject << "\n";
         return frames[position];
     }else{
@@ -224,28 +253,41 @@ VideoFrame VideoBuffer::getVideoFrame(int position){
     }
 }
 
-VideoFrame VideoBuffer::getVideoFrame(float pct){
-    return getVideoFrame(getLastTimestamp()-(getInitTime()+getTotalTime()*pct));
-}
+    //----------------------------------------------
+    VideoFrame VideoBuffer::getVideoFrame(float pct)
+    {
+        return getVideoFrame(getLastTimestamp()-(getInitTime()+getTotalTime()*pct));
+    }
 
-VideoFrame VideoBuffer::getNextVideoFrame(){
-    return getVideoFrame((int)size()-1);
-}
+    //----------------------------------------------
+    VideoFrame VideoBuffer::getNextVideoFrame()
+    {
+        return getVideoFrame((int)getSizeInFrames()-1);
+    }
 
-long VideoBuffer::getTotalFrames(){
-    return totalFrames;
-}
+    //----------------------------------------------
+    unsigned int VideoBuffer::getSizeInFrames()
+    {
+        int res = 0;
+        if(!frames.empty()) res=frames.size();
+        return res;
+    }
 
-double VideoBuffer::getRealFPS(){
-    return realFps;
-}
+    long VideoBuffer::getTotalFrames()
+    {
+        return totalFrames;
+    }
+
+//double VideoBuffer::getRealFPS(){
+//    return realFps;
+//}
 
 
 void VideoBuffer::draw(){
 		
-    float length = (float(size())/float(maxSize))*(ofGetWidth()-(PMDRAWSPACING*2));
+    float length = (float(getSizeInFrames())/float(maxSize))*(ofGetWidth()-(PMDRAWSPACING*2));
     float oneLength=float(ofGetWidth()-PMDRAWSPACING*2)/(float)(maxSize);
-	int sizeInOneLengths= oneLength*size();
+	int sizeInOneLengths= oneLength*getSizeInFrames();
 	int drawBufferY = ofGetHeight() -80;
 	int originXAtEnd = ofGetWidth() - PMDRAWSPACING;
 
@@ -263,9 +305,9 @@ void VideoBuffer::draw(){
 	
 	int fps = getFps();
     char measureMessage[10];
-    for(int i=0;i<size()+1;i=i+5){
+    for(int i=0;i<getSizeInFrames()+1;i=i+5){
 		
-       if((size()-i)%fps==0){
+       if((getSizeInFrames()-i)%fps==0){
 		   ofSetColor(255,128);
 		   //ofRect(originXAtEnd-(oneLength*(i)),drawBufferY+10,oneLength-1,-10);
            ofLine(originXAtEnd-(oneLength*(i)),drawBufferY,originXAtEnd-(oneLength*(i)),drawBufferY-10);

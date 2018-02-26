@@ -62,7 +62,7 @@ void MultixRenderer::updateValuesMs(vector<float> _vf)
 {
     // CLEAN headers and renderers and resize the to new
     numHeaders = _vf.size();
-    cout << "MultixRender::updateValuesMs" << endl;
+    //cout << "MultixRender::updateValuesMs" << endl;
     int currNumHeaders = videoHeader.size();
     if(currNumHeaders!=numHeaders){
         videoHeader.resize(numHeaders);
