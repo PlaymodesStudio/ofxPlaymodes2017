@@ -23,6 +23,7 @@ public:
 
 	void setup();
     void draw(int x,int y,int w,int h);
+    void draw(int x,int y);
     void draw();
     virtual void newVideoFrame(VideoFrame & frame);
 

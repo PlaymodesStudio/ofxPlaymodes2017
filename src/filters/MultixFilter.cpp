@@ -300,7 +300,7 @@ void MultixFilter::newVideoFrame(VideoFrame & _frame)
         //_frame.getTextureRef().draw(0,0,fbo.getWidth(),fbo.getHeight());
         //videoRenderer[1].draw(ofGetMouseX(),ofGetMouseY(),fbo.getWidth(),fbo.getHeight());
         drawIntoFbo(0,0,fbo.getWidth(),fbo.getHeight());
-        ofDrawCircle(320,240,50);
+//        ofDrawCircle(320,240,50);
         
     }
     fbo.end();

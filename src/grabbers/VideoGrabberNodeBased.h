@@ -45,7 +45,7 @@ private:
     ofParameter<int>                    paramResolutionX;
     ofParameter<int>                    paramResolutionY;
     void                                setGrabberSettings(bool & _b);
-    void                                setSetupGrabber(bool & _b);
+    void                                setReconnect(bool & _b);
 
     int                                 numGrabberDevices;
 };

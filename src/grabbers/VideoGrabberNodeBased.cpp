@@ -20,26 +20,21 @@ bool VideoGrabberNodeBased::initGrabber(int w, int h){
     // parametersGroup
     numGrabberDevices = VideoGrabberNodeBased::listDevices().size();
 
-    //
-    ofParameterGroup*                   parameters;
-    void                                setGrabberSettings(bool & _b);
-    void                                setSetupGrabber(bool & _b);
-//
     
     parameters = new ofParameterGroup();
     parameters->setName("VideoGrabber");
     parameters->add(paramGrab.set("Grab", false));
     parameters->add(paramSettings.set("Settings", true));
     parameters->add(paramDeviceId.set("DeviceId",0,0,numGrabberDevices));
-    parameters->add(paramResolutionX.set("ResolutionX",640,0,640));
-    parameters->add(paramResolutionY.set("ResolutionY",480,0,480));
+    parameters->add(paramResolutionX.set("ResolutionX",640,0,1920));
+    parameters->add(paramResolutionY.set("ResolutionY",480,0,1080));
     parameters->add(paramReconnect.set("Reconnect",true));
     parameters->add(paramFrameOut.set("Frame Output", frame));
     
     parametersControl::getInstance().createGuiFromParams(parameters,ofColor::orange);
     
     paramSettings.addListener(this, &VideoGrabberNodeBased::setGrabberSettings);
-    paramReconnect.addListener(this, &VideoGrabberNodeBased::setSetupGrabber);
+    paramReconnect.addListener(this, &VideoGrabberNodeBased::setReconnect);
 
 
     // GRABBER ORIGINAL CODE
@@ -90,9 +85,10 @@ void VideoGrabberNodeBased::setFps(float fps){
     void VideoGrabberNodeBased::setGrabberSettings(bool & _b)
     {
         ofVideoGrabber::videoSettings();
+        
     }
     //------------------------------------------------------
-    void VideoGrabberNodeBased::setSetupGrabber(bool & _b)
+    void VideoGrabberNodeBased::setReconnect(bool & _b)
     {
         ofVideoGrabber::close();
         ofVideoGrabber::listDevices();
@@ -100,6 +96,8 @@ void VideoGrabberNodeBased::setFps(float fps){
         ofVideoGrabber::setup(paramResolutionX,paramResolutionY);
         
     }
+    
+    
 
 
     

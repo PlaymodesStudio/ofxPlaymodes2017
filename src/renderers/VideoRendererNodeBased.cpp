@@ -13,7 +13,7 @@ namespace ofxPm
 {
     VideoRendererNodeBased::VideoRendererNodeBased()
     {
-    
+        
     }
 
 
@@ -27,7 +27,9 @@ namespace ofxPm
     //--------------------------------------------------------------
     void VideoRendererNodeBased::setup()
     {
-    
+
+        vFrame = ofxPm::VideoFrame();
+        
         parameters = new ofParameterGroup();
         parameters->setName("Video Renderer");
         parameters->add(paramFrameIn.set("Frame In", vFrame));
@@ -74,6 +76,20 @@ namespace ofxPm
             }
         }
     }
+    //--------------------------------------------------------------
+    void VideoRendererNodeBased::draw(int _x,int _y)
+    {
+        if(!vFrame.isNull())
+        {
+            if(!vFrame.isNull())
+            {
+                if(vFrame.getTextureRef().isAllocated())
+                {
+                    vFrame.getTextureRef().draw(_x,_y,vFrame.getWidth(),vFrame.getHeight());
+                }
+            }
+        }
+    }
     
 
 //--------------------------------------------------------------
@@ -90,6 +106,7 @@ ofTexture VideoRendererNodeBased::getLastFrameTexture()
             cout << "VideoRenderer :: getLastFrame texture not allocated !!" << endl;
         }
     }
+    return vFrame.getTextureRef();;
 }
 
     
