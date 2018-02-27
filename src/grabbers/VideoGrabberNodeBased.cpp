@@ -25,7 +25,7 @@ bool VideoGrabberNodeBased::initGrabber(int w, int h){
     parameters->setName("VideoGrabber");
     parameters->add(paramGrab.set("Grab", false));
     parameters->add(paramSettings.set("Settings", true));
-    parameters->add(paramDeviceId.set("DeviceId",0,0,numGrabberDevices));
+    parameters->add(paramDeviceId.set("DeviceId",0,0,numGrabberDevices-1));
     parameters->add(paramResolutionX.set("ResolutionX",640,0,1920));
     parameters->add(paramResolutionY.set("ResolutionY",480,0,1080));
     parameters->add(paramReconnect.set("Reconnect",true));

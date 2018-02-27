@@ -30,6 +30,8 @@
 #include "MultixFilter.h"
 #include "VideoTestShaderFX.h"
 #include "GradientEdgesFilter.h"
+#include "FeedbackFilterNodeBased.h"
+
 
 #include "AudioSample.h"
 #include "AudioBufferSamples.h"
