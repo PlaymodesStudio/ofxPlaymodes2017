@@ -48,11 +48,27 @@ void VideoRenderer::draw(int x,int y,int w,int h)
 //--------------------------------------------------------------
 void VideoRenderer::drawNextFrame(int x,int y,int w,int h)
 {
-    VideoFrame frame = source->getNextVideoFrame();
-    if(frame!=NULL){
-        frame.getTextureRef().draw(x,y,w,h);
+    lastFrame = source->getNextVideoFrame();
+    if(lastFrame!=NULL){
+        lastFrame.getTextureRef().draw(x,y,w,h);
     }
     
+}
+    
+//--------------------------------------------------------------
+ofTexture VideoRenderer::getLastFrameTexture()
+{
+    if(lastFrame!=NULL)
+    {
+        if(lastFrame.getTextureRef().isAllocated())
+        {
+            return lastFrame.getTextureRef();
+        }
+        else
+        {
+            cout << "VideoRenderer :: getLastFrame texture not allocated !!" << endl;
+        }
+    }
 }
 
     

@@ -15,6 +15,9 @@
 #include "ofxMidi.h"
 #include "ofxTweenzor.h"
 #include "bpmControl.h"
+#include "midiConnection.h"
+
+
 
 enum moduleType{
     phasor_module = 1,
@@ -24,12 +27,11 @@ enum moduleType{
     waveScope_module = 5
 };
 
-static const int NUM_PRESETS = 40;
-
 class nodeConnection{
 public:
     nodeConnection(){};
     nodeConnection(ofxDatGuiComponent* c, shared_ptr<ofxDatGui> g, ofAbstractParameter* p){
+        closedLine = false;
         min.set("Min", 0, 0, 1);
         max.set("Max", 1, 0, 1);
         points.resize(2);
@@ -39,8 +41,8 @@ public:
         bindedComponentsParent[0] = g;
         bindedParameters[0] = p;
         path.setFilled(false);
+        path.setStrokeWidth(2);
         path.setStrokeColor(ofColor::white);
-        path.setStrokeWidth(1);
         path.setCurveResolution(50);
         path.moveTo(points[0]);
     }
@@ -62,11 +64,11 @@ public:
     }
     
     void connectTo(ofxDatGuiComponent* c, shared_ptr<ofxDatGui> g, ofAbstractParameter* p){
-        gui = new ofxDatGui();
+        gui = new ofxDatGui(0, 0);
         gui->setVisible(false);
         gui->addLabel(bindedParameters[0]->getName() + " ==> " + p->getName());
-        gui->addSlider(min);
-        gui->addSlider(max);
+        gui->addSlider(min)->setPrecision(1000);
+        gui->addSlider(max)->setPrecision(1000);
         points[1].x = c->getX();
         points[1].y = c->getY() + c->getHeight()/2;
         bindedComponents[1] = c;
@@ -151,7 +153,7 @@ public:
                 if(pos != ofPoint(-1, -1));
                    gui->setPosition(pos.x, pos.y);
             }else{
-                path.setStrokeWidth(1);
+                path.setStrokeWidth(2);
                 path.setStrokeColor(ofColor::white);
                 gui->setVisible(false);
             }
@@ -173,6 +175,7 @@ public:
     bool closedLine = false;
     
     ofEvent<ofAbstractParameter> destroyEvent;
+    
     
 private:
     ofxDatGui*  gui;
@@ -204,8 +207,7 @@ public:
     void setup();
     void update(ofEventArgs &args);
     void draw(ofEventArgs &args);
-    void setSliderPrecision(int guiId, string sliderName, int p);
-
+    
     void onGuiButtonEvent(ofxDatGuiButtonEvent e);
     void onGuiToggleEvent(ofxDatGuiToggleEvent e);
     void onGuiDropdownEvent(ofxDatGuiDropdownEvent e);
@@ -215,6 +217,7 @@ public:
     void onGuiColorPickerEvent(ofxDatGuiColorPickerEvent e);
     void onGuiRightClickEvent(ofxDatGuiRightClickEvent e);
     void onGuiScrollViewEvent(ofxDatGuiScrollViewEvent e);
+    void onGuiParagraphEvent(ofxDatGuiParagraphEvent e);
     
     void newModuleListener(ofxDatGuiDropdownEvent e);
     void newPresetListener(ofxDatGuiTextInputEvent e);
@@ -239,9 +242,12 @@ public:
     
     void savePreset(string presetName, string bank);
     void loadPreset(string presetName, string bank);
-    void loadPresetWithFade(int presetNum, string bank);
+    void loadPresetWithFade(string presetName, string bank);
     
     void changePresetLabelHighliht(ofxDatGuiButton* presetToHighlight);
+    
+    void saveMidiMapping(string presetName, string bank);
+    void loadMidiMapping(string presetName, string bank);
     
     void saveGuiArrangement();
     void loadGuiArrangement();
@@ -252,16 +258,32 @@ public:
     
     void loadBank();
     
-    void  setGlobalBPM(float bpm);
-    float getGlobalBPM();
+    void setGlobalBPM(float bpm);
     
     void destroyedConnection(ofAbstractParameter &disconnectedParameter);
     
-    ofEvent<pair<moduleType, ofPoint>>  createNewModule;
+    ofEvent<pair<string, ofPoint>>      createNewModule;
     ofEvent<string>                     destroyModule;
     ofEvent<void>                       nextFrameEvent;
     
-    ofxDatGui* getGui(){return datGui;};
+    static void addDropdownToParameterGroupFromParameter(ofParameterGroup* parameterGroup, string name, vector<string> options, ofParameter<int> dropdownSelector){
+        ofParameterGroup tempDropdown;
+        tempDropdown.setName(name + " Select");
+        string  tempStr;
+        ofParameter<string> tempStrParam("Options");
+        for(auto opt : options)
+            tempStr += opt + "-|-";
+        
+        tempStr.erase(tempStr.end()-3, tempStr.end());
+        tempStrParam.set(tempStr);
+        
+        tempDropdown.add(tempStrParam);
+        tempDropdown.add(dropdownSelector.set(name +" Select", 0, 0, options.size()));
+        parameterGroup->add(tempDropdown);
+    }
+    
+    float getGlobalBPM();
+
 
 private:
     
@@ -276,7 +298,8 @@ private:
     ofxDatGuiScrollView* presetsList;
     
     vector<shared_ptr<ofxDatGui>> datGuis;
-    vector<ofParameterGroup*> parameterGroups;
+    vector<ofParameterGroup*>   parameterGroups;
+    vector<ofParameterGroup*>   senderGroups;
     
     ofxDatGui *popUpMenu;
     
@@ -289,10 +312,6 @@ private:
     
     ofXml xml;
     
-    ofxMidiOut midiOut;
-    ofxMidiIn   midiIn;
-    
-    deque<ofxMidiMessage> midiMessages;
     
     float   presetChangedTimeStamp;
     float   periodTime;
@@ -301,8 +320,9 @@ private:
     vector<pair<int, string>> presetNumbersAndBanks;
     vector<int> presetsTime;
     int presetChangeCounter;
+    vector<pair<int, string>> currentBankPresetList;
     
-    int presetToLoad;
+    string presetToLoad;
     string bankToLoad;
     
     bool isFading;
@@ -314,6 +334,18 @@ private:
     
     //node
     vector<shared_ptr<nodeConnection>>  connections;
+    
+    //MIDI
+    vector<ofxMidiOut> midiOut;
+    vector<ofxMidiIn>  midiIn;
+    
+    deque<ofxMidiMessage> midiMessages;
+    vector<ofxMidiMessage>  midiMessagesFiller;
+    int newMessages = 0;
+    vector<midiConnection<int>>         midiIntConnections;
+    vector<midiConnection<float>>       midiFloatConnections;
+    vector<midiConnection<bool>>        midiBoolConnections;
+    bool    midiListenActive;
     
     bool    commandPressed = false;
     bool    canvasDragging = false;

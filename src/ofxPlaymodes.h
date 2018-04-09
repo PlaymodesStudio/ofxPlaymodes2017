@@ -19,10 +19,12 @@
 #include "BasicVideoRenderer.h"
 #include "VideoRenderer.h"
 #include "MultixRenderer.h"
+#include "VideoTrioRenderer.h"
 
 
 #include "MultixFilter.h"
 #include "VideoTestShaderFX.h"
+#include "GradientEdgesFilter.h"
 
 #include "AudioSample.h"
 #include "AudioBufferSamples.h"

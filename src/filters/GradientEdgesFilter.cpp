@@ -5,33 +5,10 @@
  *      Author: arturo
  */
 
-#include "VideoTestShaderFX.h"
-
-//#define STRINGIFY(...) #__VA_ARGS__
-//static string fragmentTestSrc =
-//#ifdef TARGET_LINUX
-//"#version 140\n"
-//"#extension GL_ARB_texture_rectangle : enable\n"
-//#endif
-//
-////static string fragmentTestSrc =
-////
-////        STRINGIFY(
-////                  "#version 140\n"
-////                  
-////                  uniform sampler2D tex0;
-////
-////                  void main (void){
-////                      vec2 pos = gl_FragCoord.xy;
-////                      vec4 color = vec4(texture2DRect(tex0, pos));
-////
-////                      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
-////                  }
-////        );
-////
+#include "GradientEdgesFilter.h"
 
 namespace ofxPm{
-VideoTestShaderFX::VideoTestShaderFX()
+GradientEdgesFilter::GradientEdgesFilter()
 //:source(0),
 //newFrame(false)
 {
@@ -39,21 +16,22 @@ VideoTestShaderFX::VideoTestShaderFX()
 
 }
 
-VideoTestShaderFX::~VideoTestShaderFX() {
+GradientEdgesFilter::~GradientEdgesFilter() {
 	// TODO Auto-generated destructor stub
 }
 
-void VideoTestShaderFX::setup(VideoSource & _source){
+void GradientEdgesFilter::setup(VideoSource & _source){
 
-    lumaSmooth=0.25;
-    lumaThreshold=0.025;
+    gradientWidth = 0.25;
+    gradientXorY = 1.0;
+    
     source = &_source;
     fps = _source.getFps();
     
 	frame = VideoFrame::newVideoFrame(source->getNextVideoFrame());
-	ofAddListener(source->newFrameEvent,this,&VideoTestShaderFX::newVideoFrame);
+	ofAddListener(source->newFrameEvent,this,&GradientEdgesFilter::newVideoFrame);
 	//shader.setupShaderFromSource(GL_FRAGMENT_SHADER,fragmentTestSrc);
-    shader.load("shaders/lumakey");
+    shader.load("shaders/gradient");
      
 	//shader.linkProgram();
     // allocate fbo where to draw
@@ -69,7 +47,7 @@ void VideoTestShaderFX::setup(VideoSource & _source){
     cout <<"FX Source W : "  << source->getWidth() << " H : " << source->getHeight() << endl;
 }
 
-VideoFrame VideoTestShaderFX::getNextVideoFrame(){
+VideoFrame GradientEdgesFilter::getNextVideoFrame(){
     
 //    if(source->getNextVideoFrame()!=NULL)
 //    {
@@ -80,7 +58,7 @@ VideoFrame VideoTestShaderFX::getNextVideoFrame(){
 
 }
 
-void VideoTestShaderFX::newVideoFrame(VideoFrame & _frame){
+void GradientEdgesFilter::newVideoFrame(VideoFrame & _frame){
 //	//front = VideoFrame::newVideoFrame(frame);
 //
     
@@ -97,9 +75,9 @@ void VideoTestShaderFX::newVideoFrame(VideoFrame & _frame){
         shader.begin();
         {
             shader.setUniformTexture("tex0",_frame.getTextureRef(),0);
-            shader.setUniform1f("u_smooth",lumaSmooth);
-            shader.setUniform1f("u_max",lumaThreshold);
-
+            shader.setUniform1f("u_width",gradientWidth);
+            shader.setUniform1i("u_xory",gradientXorY);
+            
             ofSetColor(255);
         //    frame.getTextureRef().bind();
         //	ofDrawRectangle(0,0,frame.getWidth(),frame.getHeight());

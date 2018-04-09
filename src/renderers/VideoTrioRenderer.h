@@ -5,8 +5,8 @@
  *      Author: arturo castro
  */
 
-#ifndef VIDEORENDERER_H_
-#define VIDEORENDERER_H_
+#ifndef VIDEOTRIORENDERER_H_
+#define VIDEOTRIORENDERER_H_
 
 #include "VideoSink.h"
 #include "VideoSource.h"
@@ -15,27 +15,22 @@
 
 namespace ofxPm{
 
-class VideoRenderer: public VideoSink {
+class VideoTrioRenderer: public VideoSink {
 
 public:
-	VideoRenderer();
-	VideoRenderer(VideoSource & source);
-	~VideoRenderer();
+	VideoTrioRenderer();
+	VideoTrioRenderer(VideoSource & source);
+	~VideoTrioRenderer();
 
 	virtual void setup(VideoSource & source);
 
 	void draw();
     void draw(int x,int y,int w,int h);
     
-    ofTexture getLastFrameTexture();
-
 private:
     virtual void drawNextFrame(int x,int y,int w,int h);
     VideoSource *source;
-    
-    VideoFrame  lastFrame;
-
 };
 }
 
-#endif /* VIDEORENDERER_H_ */
+#endif /* VIDEOTRIORENDERER_H_ */

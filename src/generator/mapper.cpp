@@ -24,10 +24,10 @@ mapper::mapper(int index, ofPoint pos)
 
     
     Input.addListener(this, &mapper::recalculate);
-    MinInput.addListener(this, &mapper::recalculate);
-    MaxInput.addListener(this, &mapper::recalculate);
-    MinOutput.addListener(this, &mapper::recalculate);
-    MaxOutput.addListener(this, &mapper::recalculate);
+//    MinInput.addListener(this, &mapper::recalculate);
+//    MaxInput.addListener(this, &mapper::recalculate);
+//    MinOutput.addListener(this, &mapper::recalculate);
+//    MaxOutput.addListener(this, &mapper::recalculate);
     
 //    resetPhase_Param.addListener(this, &phasorClass::resetPhasor);
     parametersControl::getInstance().createGuiFromParams(parameters, ofColor::purple, pos);
@@ -54,7 +54,7 @@ float mapper::getRange(){
 
 void mapper::recalculate(float& f)
 {
-    Output = ofMap(Input,MinInput,MaxInput,MinOutput,MaxOutput);
+    Output = ofMap(Input,MinInput,MaxInput,MinOutput,MaxOutput, true);
     parameters->getFloat("Output") = Output;
 }
     

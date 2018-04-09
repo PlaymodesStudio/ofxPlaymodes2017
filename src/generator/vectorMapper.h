@@ -1,39 +1,36 @@
 //
-//  phasorClass.h
+//  vectorMapper.h
 //  DGTL_Generator
 //
 //  Created by Eduard Frigola on 28/07/16.
 //
 //
 
-#ifndef mapper_h
-#define mapper_h
+#ifndef vectorMapper_h
+#define vectorMapper_h
 
 #pragma once
 
 #include "ofMain.h"
 
 
-class mapper{
+class vectorMapper{
 public:
-    mapper(int index = 0, ofPoint pos = ofPoint(-1, -1));
-    ~mapper();
+    vectorMapper(int index = 0, ofPoint pos = ofPoint(-1, -1));
+    ~vectorMapper();
     void setup(int index = 0);
-    float getRange();    
-    void resetRange();
     
-    ofParameterGroup* getParameterGroup(){return parameters;};
-    void recalculate(float& f);
+    void recalculate(vector<float>& vf);
 
 private:
     
     ofParameterGroup*    parameters;
-    ofParameter<float>  Input;
+    ofParameter<vector<float>>  Input;
     ofParameter<float>  MinInput;
     ofParameter<float>  MaxInput;
     ofParameter<float>  MinOutput;
     ofParameter<float>  MaxOutput;
-    ofParameter<float>  Output;
+    ofParameter<vector<float>>  Output;
 
 };
 

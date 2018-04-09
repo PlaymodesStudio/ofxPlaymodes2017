@@ -6,7 +6,7 @@
  */
 
 #ifndef OFARTUTILS_H_INCLUDED
-#define PMUTILS_H_INCLUDED
+#define OFARTUTILS_H_INCLUDED
 
 #include "Poco/Timestamp.h"
 #include "Poco/Mutex.h"

@@ -26,28 +26,32 @@ enum oscTypes{
 class baseOscillator{
 public:
     baseOscillator(int id = 0, bool gui = false, ofPoint pos = ofPoint(-1, -1));
-    ~baseOscillator(){};
+    ~baseOscillator(){
+        delete parameters;
+    };
     
     void setIndexNormalized(float index){indexNormalized = index;};
     
-    ofEvent<pair<int,float>> resultGenerated;
     ofParameter<float>  phasorIn;
-    ofParameter<int>    pow_Param; //Pow of the funcion, working on sin, cos....
-    ofParameter<float>  pwm_Param;
+    ofParameter<float>  pow_Param; //Pow of the funcion, working on sin, cos....
+    ofParameter<float>  pulseWidth_Param;
     ofParameter<float>  holdTime_Param; //The duration of the hold in percentage (0.5) --> 50% of the cycle is the phase in initPhase
     ofParameter<float>  phaseOffset_Param;
     ofParameter<int>    quant_Param;
     ofParameter<float>  scale_Param;
     ofParameter<float>  offset_Param;
     ofParameter<float>  randomAdd_Param;
+    ofParameter<float>  biPow_Param;
     ofParameter<int>    waveSelect_Param;
     ofParameter<float>  amplitude_Param;
+    ofParameter<float>  invert_Param;
+    ofParameter<float>  skew_Param;
     ofParameter<float>  output;
     
-    float               getOutput() {return float(output);};
+    float computeFunc(float phasor);
 
 private:
-    void computeFunc(float &phasor);
+    void funcListener(float &phasor);
     void computeMultiplyMod(float* value);
 
     int oscId;
